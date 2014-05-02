@@ -1,3 +1,5 @@
+settings.cfg
+*~
 *.o
 bin/
 build/
