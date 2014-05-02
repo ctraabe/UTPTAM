@@ -29,6 +29,7 @@ class InitialTracker {
 
     // TrackFrame is the main working part of the tracker: call this every frame.
     void ProcessFrame(KeyFrame &keyFrame);
+    void ProcessFrameAuto(KeyFrame &keyFrame);
     void GetDrawData(InitialTrackerDrawData &drawData);
     void Reset();
 
@@ -41,8 +42,10 @@ class InitialTracker {
   private:
     // The following members are used for initial map tracking (to get the first stereo pair and correspondences):
     void TrackForInitialMap();      // This is called by TrackFrame if there is not a map yet.
+    void TrackForInitialMapAuto();
     void TrailTracking_Start();     // First frame of initial trail tracking. Called by TrackForInitialMap.
     int  TrailTracking_Advance();   // Steady-state of initial trail tracking. Called by TrackForInitialMap.
+    bool EvaluateTrails();
 
   private:
     enum InitialTrackingStage {

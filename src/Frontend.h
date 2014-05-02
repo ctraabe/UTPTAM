@@ -108,6 +108,8 @@ class Frontend {
       return mOnTrackedPoseUpdatedSlot.connect(slot);
     }
 
+    void ToggleMode();
+    
   private:
     void Reset();
     void ProcessInitialization(bool bUserInvoke);
@@ -118,6 +120,9 @@ class Frontend {
     bool mbInitialTracking;
     bool mbHasDeterminedScale;
 
+    // Which mode for initialization
+    int mbInitMode;
+    
     ATANCamera mCamera;
     FrameGrabber *mpFrameGrabber;
     InitialTracker *mpInitialTracker;

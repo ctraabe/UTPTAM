@@ -111,6 +111,11 @@ Frontend::Frontend(FrameGrabber *pFrameGrabber,
 
   mStereoProcessor.LoadCalibration("Data/intrinsics.yml", "Data/extrinsics.yml",
                                    pFrameGrabber->GetFrameSize());
+
+  gvar3<int> gvnInitMode("InitMode", 0, HIDDEN|SILENT) ;
+  mbInitMode = *gvnInitMode;
+  std::cout << "init mode: " << mbInitMode << std::endl;
+  
 }
 
 void Frontend::operator()()
@@ -202,6 +207,7 @@ void Frontend::Reset()
   mbInitialTracking = true;
   mbHasDeterminedScale = false;
   mbSetScaleNextTime = false;
+  mbInitMode = 0;
 }
 
 void Frontend::ProcessInitialization(bool bUserInvoke)
@@ -387,27 +393,66 @@ void Frontend::ProcessInitialization(bool bUserInvoke)
     mDrawData.bInitialTracking = true;
     mDrawData.sStatusMessage = "Press spacebar to init";
 
-  } else {
+  }
+  // STEREO NOT USED
+  else {
     // Initial tracking path
-    if (bUserInvoke) {
-      mpInitialTracker->UserInvoke();
-    }
+      switch(mbInitMode) {
+	  // Fully manual mode
+	  case 0:
+	      if (bUserInvoke) {
+		  mpInitialTracker->UserInvoke();
+	      }
 
-    mpInitialTracker->ProcessFrame(mKeyFrame);
-    if (mpInitialTracker->IsDone()) {
-      mpTracker->SetCurrentPose(mpInitialTracker->GetCurrentPose());
-      mbInitialTracking = false;
+	      mpInitialTracker->ProcessFrame(mKeyFrame);
+	      if (mpInitialTracker->IsDone()) {
+		  mpTracker->SetCurrentPose(mpInitialTracker->GetCurrentPose());
+		  mbInitialTracking = false;
+		  
+		  cout << "Inited to pose: " << mpInitialTracker->GetCurrentPose() << endl;
+	      }
 
-      cout << "Inited to pose: " << mpInitialTracker->GetCurrentPose() << endl;
-    }
+	      mDrawData.bUseStereo = false;
+	      mDrawData.bInitialTracking = true;
+	      mDrawData.sStatusMessage = mpInitialTracker->GetMessageForUser();
+	      mpInitialTracker->GetDrawData(mDrawData.initialTracker);
+	      break;
 
-    mDrawData.bUseStereo = false;
-    mDrawData.bInitialTracking = true;
-    mDrawData.sStatusMessage = mpInitialTracker->GetMessageForUser();
-    mpInitialTracker->GetDrawData(mDrawData.initialTracker);
+	      // Semi automatic mode
+	  case 1:
+	      
+	      break;
+
+	      // Fully automatic mode
+	  case 2:
+	      mpInitialTracker->ProcessFrameAuto(mKeyFrame);
+
+	      if (mpInitialTracker->IsDone()) {
+		  mpTracker->SetCurrentPose(mpInitialTracker->GetCurrentPose());
+		  mbInitialTracking = false;
+		  
+		  cout << "Inited to pose: " << mpInitialTracker->GetCurrentPose() << endl;
+	      }	      
+
+	      
+	      mDrawData.bUseStereo = false;
+	      mDrawData.bInitialTracking = true;
+	      mDrawData.sStatusMessage = mpInitialTracker->GetMessageForUser();
+	      mpInitialTracker->GetDrawData(mDrawData.initialTracker);
+	      break;
+      }
+	      
   }
 }
 
+    void Frontend::ToggleMode() {
+
+	mbInitMode = (mbInitMode+1)%3;
+
+    }
+
+
+    
 void Frontend::DetermineScaleFromMarker(const FrameData& fd, bool bUserInvoke)
 {
   mbSetScaleNextTime = mbSetScaleNextTime || bUserInvoke;

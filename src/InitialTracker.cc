@@ -73,6 +73,17 @@ void InitialTracker::ProcessFrame(KeyFrame &keyFrame)
   TrackForInitialMap();
 }
 
+
+    void InitialTracker::ProcessFrameAuto(KeyFrame &keyFrame)
+    {
+	mMessageForUser.str("Auto Init");
+	mpCurrentKF = &keyFrame;
+	TrackForInitialMapAuto();
+    }
+    
+
+    
+
 void InitialTracker::GetDrawData(InitialTrackerDrawData &drawData)
 {
   drawData.vTrails.clear();
@@ -153,6 +164,100 @@ void InitialTracker::TrackForInitialMap()
     }
   }
 }
+
+void InitialTracker::TrackForInitialMapAuto()
+{
+  // MiniPatch tracking threshhold.
+  static gvar3<int> gvnMaxSSD("Tracker.MiniPatchMaxSSD", 100000, SILENT);
+  MiniPatch::mnMaxSSD = *gvnMaxSSD;
+
+  
+  // What stage of initial tracking are we at?
+  if(mStage == TRAIL_TRACKING_NOT_STARTED)
+  {
+      TrailTracking_Start();
+      mStage = TRAIL_TRACKING_STARTED;
+  }
+
+  if(mStage == TRAIL_TRACKING_STARTED)
+  {
+    int nGoodTrails = TrailTracking_Advance();  // This call actually tracks the trails
+    if(nGoodTrails < 10) // if most trails have been wiped out, no point continuing.
+    {
+      Reset();
+      return;
+    }
+
+    // Evaluate Trails
+    if(EvaluateTrails())
+    {
+      vector<pair<ImageRef, ImageRef> > vMatches;   // This is the format the mapmaker wants for the stereo pairs
+      for (auto i = mlTrails.begin(); i!=mlTrails.end(); ++i) {
+        vMatches.push_back(pair<ImageRef, ImageRef>(i->irInitialPos, i->irCurrentPos));
+      }
+
+      mpMapMaker->InitFromStereo(mFirstKF, *mpCurrentKF, vMatches, &mse3CamFromWorld); // This is an async operation that will take some time
+      mStage = WAITING_FOR_STEREO_INIT;
+    }
+  }
+
+  if(mStage == WAITING_FOR_STEREO_INIT) {
+    if (mpMapMaker->StereoInitDone()) {
+      if (mpMap->IsGood()) {
+        mStage = TRAIL_TRACKING_COMPLETE;
+        cout << "Stereo init done!" << endl;
+      } else {
+        Reset();
+      }
+    } else {
+      // Give the user some feedback
+      mMessageForUser << "Waiting for stereo initialization...";
+    }
+  }
+}
+
+
+    bool InitialTracker::EvaluateTrails() {
+
+
+	if (mlTrails.size() < 2) {
+	    return false;
+	}
+	
+	float xc=0.0f,yc=0.0f;
+	float xv=0.0f,yv=0.0f;
+	
+	for (auto i = mlTrails.begin(); i != mlTrails.end(); ++i) {
+	    Trail &trail = *i;
+	    xc += (trail.irCurrentPos.x-trail.irInitialPos.x);
+	    yc += (trail.irCurrentPos.y-trail.irInitialPos.y);
+	}
+
+	xc /= mlTrails.size();
+	yc /= mlTrails.size();
+	
+	for (auto i = mlTrails.begin(); i != mlTrails.end(); ++i) {
+	    Trail &trail = *i;
+	    xv += (trail.irCurrentPos.x-trail.irInitialPos.x - xc)*(trail.irCurrentPos.x-trail.irInitialPos.x - xc);
+	    yv += (trail.irCurrentPos.y-trail.irInitialPos.y - yc)*(trail.irCurrentPos.y-trail.irInitialPos.y - yc);
+	}
+
+	xv /= mlTrails.size();
+	yv /= mlTrails.size();
+
+
+	cout << "xc,yc: " << xc << ", " << yc << std::endl;
+	cout << "xv,yv: " << xv << ", " << yv << std::endl;
+
+
+	if (xc*xc+yc*yc > 625) {
+	    return true;
+	}
+
+	
+	return false;
+    }
+    
 
 /**
  * The current frame is to be the first keyframe!

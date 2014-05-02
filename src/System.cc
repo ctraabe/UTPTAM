@@ -389,6 +389,9 @@ void System::GUICommandCallBack(const string &sCommand, const string &sParams)
     else if(sParams == "f") {
       mModules.pFrameGrabber->SetFreezeFrame(!mModules.pFrameGrabber->IsFrameFrozen());
     }
+    else if(sParams == "m") {
+	mModules.pFrontend->ToggleMode();
+    }
   }
 }
 

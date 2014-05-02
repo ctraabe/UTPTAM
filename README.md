@@ -6,6 +6,7 @@ Installation instructions on Ubuntu 13.04
 # Install prerequisites:
 
 sudo apt-get update
+
 sudo apt-get install build-essential libpng12-dev libblas-dev liblapack-dev freeglut3-dev libreadline-dev libgstreamer0.10-dev libgstreamer-plugins-base0.10-dev libv4l-dev libxi-dev libxmu-dev libopencv-dev libboost-signals-dev cmake git cvs
 
 # make project directory called airconvision
