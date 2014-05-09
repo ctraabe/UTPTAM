@@ -1,4 +1,4 @@
-project(PTAML CXX C)
+project(UTPTAM CXX C)
 cmake_minimum_required(VERSION 2.8)
 # Set default built type
 set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING
@@ -85,7 +85,7 @@ set(VIDEO_SOURCE_SRC
 )
 
 #
-# PTAML
+# UTPTAM
 #
 
 add_subdirectory(src)

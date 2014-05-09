@@ -1,26 +1,5 @@
-# AR Toolkit   
-find_path(ARTOOLKIT_DIR 
-	NAMES include/AR 
-	HINTS /opt/ARToolKit ~/ARToolKit ${CMAKE_SOURCE_DIR}/EXTERNAL/ARToolKit
-	DOC "Set the installation directory of AR Toolkit.")
-	
-if(NOT ARTOOLKIT_DIR)
-	message(FATAL_ERROR "Could not find ARToolKit, please set 'ARTOOLKIT_DIR' manually")
-endif()
-
-# Include paths
-include_directories(
-    "${ARTOOLKIT_DIR}/include"
-	"/usr/local/flycapture"
-)
-
-link_directories(
-	"${ARTOOLKIT_DIR}/lib"
-	"/usr/lib"
-)
-
 # Libraries
-set(PTAML_LIBS
+set(UTPTAM_LIBS
 	${GSTREAMER_LIBRARIES}
 	gstapp-0.10
 	GVars3
@@ -45,7 +24,7 @@ set(PTAML_LIBS
 )
 
 #
-# PTAML
+# UTPTAM
 #
 
 set(AGAST_SRC
@@ -60,7 +39,7 @@ set(AGAST_SRC
     agast/oast9_16.cc
 )
 
-set(PTAML_SRC
+set(UTPTAM_SRC
 	${AGAST_SRC}
 	ARToolkit.cc
 	ATANCamera.cc
@@ -110,7 +89,7 @@ set(PTAML_SRC
 	${VIDEO_SOURCE_SRC}
 )
 
-add_executable(PTAML ${PTAML_SRC})
-target_link_libraries(PTAML ${PTAML_LIBS})
-target_link_libraries(PTAML flycapture)
+add_executable(UTPTAM ${UTPTAM_SRC})
+target_link_libraries(UTPTAM ${UTPTAM_LIBS})
+target_link_libraries(UTPTAM flycapture)
 
