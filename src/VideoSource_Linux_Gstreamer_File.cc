@@ -175,7 +175,7 @@ VideoSource_Linux_Gstreamer_File::~VideoSource_Linux_Gstreamer_File()
  * @param imBW  Return parameter containing the current video frame decoded in monochrome.
  * @param imRGB Return parameter containing the current video frame decoded in RGB.
  */
-void VideoSource_Linux_Gstreamer_File::GetAndFillFrameBWandRGB(Image<byte> &imBW, Image<Rgb<byte> > &imRGB)
+bool VideoSource_Linux_Gstreamer_File::GetAndFillFrameBWandRGB(Image<byte> &imBW, Image<Rgb<byte> > &imRGB)
 {
   GstBuffer *rgbVideoBuffer = NULL;
   GstBuffer *grayVideoBuffer = NULL;
@@ -208,7 +208,12 @@ void VideoSource_Linux_Gstreamer_File::GetAndFillFrameBWandRGB(Image<byte> &imBW
 
       /* Maintain the running total of frames. */
       mFrameNumber++;
+
+      return true;
     }
   }
+    return false;
+
 }
+
 }

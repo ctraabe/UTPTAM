@@ -51,7 +51,7 @@ VideoSource_FlyCapture::~VideoSource_FlyCapture()
 	mflu3cam.Disconnect();
 }
 
-void VideoSource_FlyCapture::GetAndFillFrameBWandRGB(Image<byte> &imBW,
+bool VideoSource_FlyCapture::GetAndFillFrameBWandRGB(Image<byte> &imBW,
 	Image<Rgb<byte> > &imRGB)
 {
 	imRGB.resize(mirSize);
@@ -68,6 +68,8 @@ void VideoSource_FlyCapture::GetAndFillFrameBWandRGB(Image<byte> &imBW,
 		(unsigned char*)imBW.data(), VIDEO_H * VIDEO_W,
 		FlyCapture2::PIXEL_FORMAT_MONO8, FlyCapture2::NONE);
 	mflu3Image.Convert(FlyCapture2::PIXEL_FORMAT_MONO8, &tempImageBW);
+
+	return true;
 }
 
 }

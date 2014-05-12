@@ -7,6 +7,7 @@
 #include "Utils.h"
 #include "PatchFinder.h"
 #include "MathUtils.h"
+#include "System.h"
 
 #include <cvd/image_ref.h>
 #include <cvd/image_io.h>
@@ -134,7 +135,8 @@ void Frontend::operator()()
     bool bUserInvoke = monitor.PopUserInvoke();
     bool bUserResetInvoke = monitor.PopUserResetInvoke();
 
-    const FrameData& fd = mpFrameGrabber->GrabFrame();
+    bool valid;
+    const FrameData& fd = mpFrameGrabber->GrabFrame(valid);
 
     // Initialize keyframe, find features etc
     mKeyFrame.InitFromImage(fd.imFrameBW[0],

@@ -273,6 +273,7 @@ void System::Run()
       &SwarmLab::UpdatePose, mModules.pSwarmLab,
       std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
+  mModules.pFrontend->system = this;
 
   // Start threads
   std::thread mapMakerThread(std::ref(*mModules.pMapMaker));

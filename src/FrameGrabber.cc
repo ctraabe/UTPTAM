@@ -230,6 +230,8 @@ FrameGrabber::FrameGrabber(PerformanceMonitor *pPerfMon)
     ImageRef irVideoSize2 = mpVideoSource2->Size();
     assert(irVideoSize1 == irVideoSize2);
   }
+
+  mbRunning = false;
 }
 
 FrameGrabber::~FrameGrabber()
@@ -240,6 +242,7 @@ FrameGrabber::~FrameGrabber()
 
 void FrameGrabber::operator ()()
 {
+    mbRunning = true;
   while (!mbDone) {
     FetchNextFrame();
   }
@@ -266,7 +269,7 @@ VideoSource* FrameGrabber::CreateVideoSource(const std::string &sName) const
   return new VideoSource_Linux_V4L(sName);
 }
 
-const FrameData& FrameGrabber::GrabFrame()
+const FrameData& FrameGrabber::GrabFrame(bool& valid)
 {
   std::unique_lock<std::mutex> lock(mMutex);
   while (!mbHasNewFrame) {
@@ -274,6 +277,7 @@ const FrameData& FrameGrabber::GrabFrame()
   }
   mnFrameDataIndex ^= 1;
   mbHasNewFrame = false;
+  valid = mbRunning;
   return maFrameData[mnFrameDataIndex];
 }
 
@@ -283,7 +287,9 @@ void FrameGrabber::FetchNextFrame()
 
   if (!mbFreezeVideo) {
     FrameData& fd = mTempFrameData;
-    mpVideoSource1->GetAndFillFrameBWandRGB(fd.imFrameBW[0], fd.imFrameRGB[0]);
+    if(!mpVideoSource1->GetAndFillFrameBWandRGB(fd.imFrameBW[0], fd.imFrameRGB[0])) {
+	mbRunning = false;
+    }
     if (mbUseStereo) {
       mpVideoSource2->GetAndFillFrameBWandRGB(fd.imFrameBW[1], fd.imFrameRGB[1]);
     }

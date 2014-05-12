@@ -20,7 +20,7 @@ class VideoSource_FlyCapture : public VideoSource
     VideoSource_FlyCapture(const unsigned int iIndex,
       const unsigned int iMemoryChannel);
     ~VideoSource_FlyCapture();
-    void GetAndFillFrameBWandRGB(CVD::Image<CVD::byte> &imBW,
+    bool GetAndFillFrameBWandRGB(CVD::Image<CVD::byte> &imBW,
       CVD::Image<CVD::Rgb<CVD::byte> > &imRGB);
     const CVD::ImageRef& Size() const { return mirSize; }
   private:

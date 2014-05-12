@@ -90,7 +90,7 @@ class FrameGrabber {
 
     void StopThread() { mbDone = true; }
 
-    const FrameData& GrabFrame();
+    const FrameData& GrabFrame(bool& valid);
 
     bool IsUsingStereo() const { return mbUseStereo; }
 
@@ -105,6 +105,8 @@ class FrameGrabber {
     void FetchNextFrame(); // Fetches new frame data from camera
 
   private:
+    bool mbRunning;
+    
     bool mbDone;
 
     PerformanceMonitor *mpPerfMon;

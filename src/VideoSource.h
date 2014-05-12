@@ -27,7 +27,7 @@ class VideoSource
     VideoSource() {}
     virtual ~VideoSource() {}
 
-    virtual void GetAndFillFrameBWandRGB(CVD::Image<CVD::byte> &imBW, CVD::Image<CVD::Rgb<CVD::byte> > &imRGB) = 0;
+    virtual bool GetAndFillFrameBWandRGB(CVD::Image<CVD::byte> &imBW, CVD::Image<CVD::Rgb<CVD::byte> > &imRGB) = 0;
     virtual const CVD::ImageRef& Size() const = 0;
 };
 

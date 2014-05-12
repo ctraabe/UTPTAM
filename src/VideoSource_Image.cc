@@ -24,11 +24,12 @@ VideoSource_Image::VideoSource_Image(const std::string &sName)
   cout << "Loaded image. Size: " << mirSize << endl;
 }
 
-void VideoSource_Image::GetAndFillFrameBWandRGB(Image<byte> &imBW, Image<Rgb<byte> > &imRGB)
+bool VideoSource_Image::GetAndFillFrameBWandRGB(Image<byte> &imBW, Image<Rgb<byte> > &imRGB)
 {
   imBW.copy_from(mimBW);
   imRGB.copy_from(mimRGB);
   mRateLimiter.Limit(mnFrameRate);
+  return true;
 }
 
 }

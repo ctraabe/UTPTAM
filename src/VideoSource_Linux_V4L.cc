@@ -20,7 +20,7 @@ VideoSource_Linux_V4L::VideoSource_Linux_V4L(const std::string &sName)
   cout << "  V4L initialized." << endl;
 }
 
-void VideoSource_Linux_V4L::GetAndFillFrameBWandRGB(Image<byte> &imBW, Image<Rgb<byte> > &imRGB)
+bool VideoSource_Linux_V4L::GetAndFillFrameBWandRGB(Image<byte> &imBW, Image<Rgb<byte> > &imRGB)
 {
   VideoFrame<yuv422> *pVidFrame = mVideoBuffer->get_frame();
   convert_image(*pVidFrame, imBW);
@@ -33,6 +33,8 @@ void VideoSource_Linux_V4L::GetAndFillFrameBWandRGB(Image<byte> &imBW, Image<Rgb
     convert_image(*pVidFrame, imRGB);
     mVideoBuffer->put_frame(pVidFrame);
   }
+
+  return true;
 }
 
 }

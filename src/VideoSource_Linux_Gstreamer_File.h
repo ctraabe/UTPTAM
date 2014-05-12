@@ -23,7 +23,7 @@ class VideoSource_Linux_Gstreamer_File : public VideoSource
     VideoSource_Linux_Gstreamer_File(const std::string& videoSourceFile);
     ~VideoSource_Linux_Gstreamer_File();
 
-    void GetAndFillFrameBWandRGB(CVD::Image<CVD::byte> &imBW, CVD::Image<CVD::Rgb<CVD::byte> > &imRGB);
+    bool GetAndFillFrameBWandRGB(CVD::Image<CVD::byte> &imBW, CVD::Image<CVD::Rgb<CVD::byte> > &imRGB);
     const CVD::ImageRef& Size() const { return mirSize; }
   private:
     GstElement *mRgbVideoSink;

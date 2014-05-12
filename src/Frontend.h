@@ -22,7 +22,8 @@
 namespace PTAMM {
 
 class PerformanceMonitor;
-
+    class System;
+    
 struct FrontendDrawData {
 
   FrontendDrawData()
@@ -109,6 +110,9 @@ class Frontend {
     }
 
     void ToggleMode();
+    
+public:
+    System* system;
     
   private:
     void Reset();
