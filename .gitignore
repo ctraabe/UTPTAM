@@ -4,3 +4,7 @@ settings.cfg
 bin/
 build/
 BUILD/
+UTPTAM
+coordinates.txt
+log/
+video.*

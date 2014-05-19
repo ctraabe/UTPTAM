@@ -160,6 +160,24 @@ void Tracker::UpdateStatsMessage()
                   << mpMap->GetMapPoints().size() << "P, " << mpMap->GetKeyFrames().size() << "KF " << gDist;
 }
 
+    std::string Tracker::GetLogMessage()
+    {
+	stringstream str;
+	if(mTrackingQuality == GOOD)  str << "2 ";
+	if(mTrackingQuality == DODGY) str << "1 ";
+	if(mTrackingQuality == BAD)   str << "0 ";
+	
+	for(int i=0; i<LEVELS; i++) {
+	    str << manMeasFound[i] << " " << manMeasAttempted[i] << " ";
+	}
+	
+	str << mpMap->MapID() << " "
+	    << mpMap->GetMapPoints().size() << " " << mpMap->GetKeyFrames().size() << " " << gDist;
+
+	return str.str();
+    }	
+    
+    
 // TrackFrame is called by System.cc with each incoming video frame.
 // It figures out what state the tracker is in, and calls appropriate internal tracking
 // functions. bDraw tells the tracker wether it should output any GL graphics
