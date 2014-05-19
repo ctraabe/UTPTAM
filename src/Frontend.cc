@@ -127,7 +127,7 @@ void Frontend::operator()()
   if (!coordinateLogFile) {
     cerr << "Failed to open coordinates.txt" << endl;
   }
-
+  
   StopWatch stopWatch;
   stopWatch.Start();
 
@@ -137,6 +137,10 @@ void Frontend::operator()()
 
     bool valid;
     const FrameData& fd = mpFrameGrabber->GrabFrame(valid);
+
+    if(!valid) {
+      system->Exit();
+    }
 
     // Initialize keyframe, find features etc
     mKeyFrame.InitFromImage(fd.imFrameBW[0],

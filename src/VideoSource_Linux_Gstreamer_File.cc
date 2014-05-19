@@ -208,10 +208,11 @@ bool VideoSource_Linux_Gstreamer_File::GetAndFillFrameBWandRGB(Image<byte> &imBW
 
       /* Maintain the running total of frames. */
       mFrameNumber++;
-
+      
       return true;
     }
   }
+
     return false;
 
 }

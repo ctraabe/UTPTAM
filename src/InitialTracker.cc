@@ -246,8 +246,8 @@ void InitialTracker::TrackForInitialMapAuto()
 	yv /= mlTrails.size();
 
 
-	cout << "xc,yc: " << xc << ", " << yc << std::endl;
-	cout << "xv,yv: " << xv << ", " << yv << std::endl;
+	//	cout << "xc,yc: " << xc << ", " << yc << std::endl;
+	//cout << "xv,yv: " << xv << ", " << yv << std::endl;
 
 
 	if (xc*xc+yc*yc > 625) {

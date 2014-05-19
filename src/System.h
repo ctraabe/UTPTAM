@@ -65,6 +65,8 @@ class System
 
     void Run();
 
+    void Exit() { Quit(); }
+
   private:
     void CreateModules();
     void CreateMenu();

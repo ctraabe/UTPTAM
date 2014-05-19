@@ -258,6 +258,7 @@ VideoSource* FrameGrabber::CreateVideoSource(const std::string &sName) const
 
   string sVideoFilename = GV3::get<string>(sName + ".VideoFile", "");
   if (!sVideoFilename.empty()) {
+    std::cout << sVideoFilename << std::endl;
     return new VideoSource_Linux_Gstreamer_File(sVideoFilename);
   }
 
