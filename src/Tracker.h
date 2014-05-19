@@ -70,6 +70,7 @@ class Tracker
       return mse3CamFromWorld.inverse().get_translation();
     }
 
+    std::string GetLogMessage();
     void ForceRecovery() { if (mnLostFrames < NUM_LOST_FRAMES) mnLostFrames = NUM_LOST_FRAMES; }
     void Reset();                   // Restart from scratch. Also tells the mapmaker to reset itself.
 

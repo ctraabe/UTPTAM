@@ -121,13 +121,26 @@ Frontend::Frontend(FrameGrabber *pFrameGrabber,
 
 void Frontend::operator()()
 {
+    std::cout << "Running frontend\n";
+    
   static gvar3<int> gvnOutputWorldCoordinates("Debug.OutputWorldCoordinates", 0, HIDDEN|SILENT);
 
+  static string logfileName = "log/" + GV3::get<string>("LogFile","");
+  
   std::ofstream coordinateLogFile("coordinates.txt", ios::out | ios::trunc);
   if (!coordinateLogFile) {
     cerr << "Failed to open coordinates.txt" << endl;
   }
 
+
+  std::ofstream logfile(logfileName, ios::out);
+  if (!logfile) {
+    cerr << "Failed to open logfile" << endl;
+  } else {
+      cerr << "Opened logfile" << std::endl;
+  }
+
+  
   StopWatch stopWatch;
   stopWatch.Start();
 
@@ -186,6 +199,10 @@ void Frontend::operator()()
             !mpTracker->IsLost(), fd.tpCaptureTime);
       }
 
+      std::string logmsg = mpTracker->GetLogMessage();
+      logfile << logmsg << std::endl;
+      
+      
       mpTracker->GetDrawData(mDrawData.tracker);
       mDrawData.bHasDeterminedScale = mbHasDeterminedScale;
       mDrawData.se3MarkerPose = mse3MarkerPose;
@@ -193,12 +210,15 @@ void Frontend::operator()()
       mDrawData.bInitialTracking = false;
     }
 
+    
     monitor.PushDrawData(mDrawData);
 
     mpPerfMon->UpdateRateCounter("frontend");
 
     mpPerfMon->StopTimer("tracking_total");
   }
+    logfile.close();
+    std::cout << "closing logfile\n";
 }
 
 void Frontend::Reset()
