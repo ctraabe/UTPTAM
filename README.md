@@ -57,7 +57,7 @@ make clean
 
 Prerequisites:
 <pre><code>
-sudo apt-get install libv4l-dev libxi-dev libxmu-dev
+sudo apt-get install libv4l-dev libxi-dev libxmu-dev freeglut3-dev
 </code></pre>
 
 Create a symbolic link to videodev.h:
