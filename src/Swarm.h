@@ -8,6 +8,8 @@
 #include <chrono>
 #include <mutex>
 
+#include "Serial.h"
+
 namespace PTAMM {
 
 class SwarmLab {
@@ -20,16 +22,14 @@ class SwarmLab {
     void UpdatePose(const TooN::SE3<> &se3Pose, bool bHasTracking,
                     const HiResTimePoint &tpTime);
   private:
+    void ProcessIncoming();
     void SendPosePacket();
-
     uint16_t Checksum(const uint8_t* data, size_t length) const;
-    void SendBuffer(uint8_t* data, int length);
   private:
     bool mbDone;
     std::mutex mMutex;
 
-    int mnComPortId;
-    bool mbOpen;
+    Serial mSerial;
 
     TooN::SE3<> mse3CurrentPose;
     HiResTimePoint mtpPoseTime;

@@ -84,7 +84,7 @@ set(UTPTAM_SRC
 	MKProtocol.cc
 	MKConnection.cc
 	MikroKopter.cc
-	rs232.c
+	Serial.cc
 	VideoSource.cc
 	${VIDEO_SOURCE_SRC}
 )
