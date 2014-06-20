@@ -36,29 +36,29 @@ MikroKopter::MikroKopter(const Tracker* pTracker, PerformanceMonitor *pPerfMon)
   ConnectToFC(comport, baudrate);
 
   // Log the control data
-  mbLogMKControl = GV3::get<int>("Debug.LogMKControl", 0, SILENT);
+  mbLogMKControl = GV3::get<int>("Log.MKControl", 0, SILENT);
   if (mbLogMKControl) {
-    mMKControlLogFile.open("mk_control.txt", ios::out | ios::trunc);
+    mMKControlLogFile.open("mk_control.log", ios::out | ios::trunc);
     if (!mMKControlLogFile) {
-      cerr << "Failed to open mk_control.txt" << endl;
+      cerr << "Failed to open mk_control.log" << endl;
     }
   }
 
   // Log the data stream from the FlightCtrl
-  mbLogMKData = GV3::get<int>("Debug.LogMKData", 0, SILENT);
+  mbLogMKData = GV3::get<int>("Log.MKData", 0, SILENT);
   if (mbLogMKData) {
-    mMKDataLogFile.open("mk_data.txt", ios::out | ios::trunc);
+    mMKDataLogFile.open("mk_data.log", ios::out | ios::trunc);
     if (!mMKDataLogFile) {
-      cerr << "Failed to open mk_data.txt" << endl;
+      cerr << "Failed to open mk_data.log" << endl;
     }
   }
 
   // Log the debug output stream from the FlightCtrl
-  mbLogMKDebug = GV3::get<int>("Debug.LogMKDebug", 0, SILENT);
+  mbLogMKDebug = GV3::get<int>("Log.MKDebug", 0, SILENT);
   if (mbLogMKDebug) {
-    mMKDebugLogFile.open("mk_debug.txt", ios::out | ios::trunc);
+    mMKDebugLogFile.open("mk_debug.log", ios::out | ios::trunc);
     if (!mMKDebugLogFile) {
-      cerr << "Failed to open mk_debug.txt" << endl;
+      cerr << "Failed to open mk_debug.log" << endl;
     }
   }
 

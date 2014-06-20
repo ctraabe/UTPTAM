@@ -121,25 +121,28 @@ Frontend::Frontend(FrameGrabber *pFrameGrabber,
 
 void Frontend::operator()()
 {
-    std::cout << "Running frontend\n";
-    
-  static gvar3<int> gvnOutputWorldCoordinates("Debug.OutputWorldCoordinates", 0, HIDDEN|SILENT);
-
-  static string logfileName = "log/" + GV3::get<string>("LogFile","");
-  
-  std::ofstream coordinateLogFile("coordinates.txt", ios::out | ios::trunc);
-  if (!coordinateLogFile) {
-    cerr << "Failed to open coordinates.txt" << endl;
+  static gvar3<int> gvnOutputTrackerLog("Log.Tracker", 0, HIDDEN|SILENT);
+  std::ofstream fileTrackerLog;
+  if (*gvnOutputTrackerLog) {
+    fileTrackerLog.open("tracker.log", ios::out | ios::trunc);
+    if (fileTrackerLog) {
+      cerr << "Opened tracker.log" << std::endl;
+    } else {
+      cerr << "Failed to open tracker.log" << endl;
+    }
   }
 
-  std::ofstream logfile(logfileName, ios::out);
-  if (!logfile) {
-    cerr << "Failed to open logfile" << endl;
-  } else {
-      cerr << "Opened logfile" << std::endl;
+  static gvar3<int> gvnOutputCoordinatesLog("Log.Coordinates", 0, HIDDEN|SILENT);
+  std::ofstream fileCoordinateLog;
+  if (*gvnOutputCoordinatesLog) {
+    fileCoordinateLog.open("coordinates.log", ios::out | ios::trunc);
+    if (fileCoordinateLog) {
+      cout << "Opened coordinates.log" << endl;
+    } else {
+      cerr << "Failed to open coordinates.log" << endl;
+    }
   }
 
-  
   StopWatch stopWatch;
   stopWatch.Start();
 
@@ -189,11 +192,14 @@ void Frontend::operator()()
       if (!mbHasDeterminedScale) {
         DetermineScaleFromMarker(fd, bUserInvoke);
       } else {
-        if (*gvnOutputWorldCoordinates) {
+        if (*gvnOutputCoordinatesLog) {
 
           auto timestamp = std::chrono::duration_cast<
               std::chrono::microseconds>(fd.tpCaptureTime.time_since_epoch()).count();
-          coordinateLogFile << timestamp << " " << stopWatch.Elapsed() << " " << mpTracker->RealWorldCoordinate() << std::endl;
+          if (fileCoordinateLog.is_open()) {
+            fileCoordinateLog << timestamp << " " << stopWatch.Elapsed() << " "
+              << mpTracker->RealWorldCoordinate() << std::endl;
+          }
         }
 
         SE3<> se3RotatedPose = se3CurrentPose;
@@ -203,7 +209,8 @@ void Frontend::operator()()
       }
 
       std::string logmsg = mpTracker->GetLogMessage();
-      logfile << logmsg << std::endl;
+      if (fileTrackerLog.is_open())
+        fileTrackerLog << logmsg << std::endl;
       
       
       mpTracker->GetDrawData(mDrawData.tracker);
@@ -213,15 +220,12 @@ void Frontend::operator()()
       mDrawData.bInitialTracking = false;
     }
 
-    
     monitor.PushDrawData(mDrawData);
 
     mpPerfMon->UpdateRateCounter("frontend");
 
     mpPerfMon->StopTimer("tracking_total");
   }
-    logfile.close();
-    std::cout << "closing logfile\n";
 }
 
 void Frontend::Reset()

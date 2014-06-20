@@ -134,10 +134,7 @@ void System::CreateMenu()
   GUI.ParseLine("Menu.AddMenuButton Root Reset Reset Root");
   GUI.ParseLine("Menu.AddMenuButton Root Realign Realign Root");
   GUI.ParseLine("Menu.AddMenuButton Root Spacebar PokeTracker Root");
-  GUI.ParseLine("DrawMap=0");
-  GUI.ParseLine("DrawDebugInfo=0");
   GUI.ParseLine("Menu.AddMenuToggle Root \"Debug Info\" DrawDebugInfo Root");
-  GUI.ParseLine("DrawPerfInfo=0");
   GUI.ParseLine("Menu.AddMenuToggle Root \"Perf. Info\" DrawPerfInfo Root");
 
   GUI.ParseLine("GLWindow.AddMenu InternalMenu Internal");
@@ -150,15 +147,14 @@ void System::CreateMenu()
   GUI.ParseLine("MapsMenu.AddMenuButton Serial \"Load Map\" LoadMap Root");
 #ifdef _LINUX
   GUI.ParseLine("MapsMenu.AddMenuToggle Serial \"Save Video\" SaveFIFO Serial");
+  GUI.ParseLine("Bitrate=15000");
   GUI.ParseLine("MapsMenu.AddMenuSlider Serial Bitrate Bitrate 100 20000 Serial");
 #endif
-  GUI.ParseLine("LockMap=0");
   GUI.ParseLine("MapsMenu.AddMenuToggle Root \"Lock Map\" LockMap Root");
 
   GUI.ParseLine("GLWindow.AddMenu MapViewerMenu Viewer");
   GUI.ParseLine("MapViewerMenu.AddMenuToggle Root \"View Map\" DrawMap Root");
 
-  GUI.ParseLine("EnableMouseControl=0");
   GUI.ParseLine("GLWindow.AddMenu HelicopterMenu Helicopter");
   GUI.ParseLine("HelicopterMenu.AddMenuToggle Root \"Mouse control\" EnableMouseControl Root");
   GUI.ParseLine("HelicopterMenu.AddMenuButton Root \"Clear path\" ClearPath Root");
