@@ -53,6 +53,10 @@ void SwarmLab::operator()()
   }
 }
 
+  void SwarmLab::SetCallback( const std::function<void(char c)> &_callback) {
+    mFusionToPTAMCallback = _callback;
+  }
+
 void SwarmLab::ProcessIncoming()
 {
   assert(mSerial);
@@ -64,6 +68,9 @@ void SwarmLab::ProcessIncoming()
   readBytes = mSerial.Read(buffer, RX_BUFFER_SIZE);
   if (readBytes)
     cout << "Received from serial: " << buffer[0] << endl;
+
+    mFusionToPTAMCallback(buffer[0]);
+
 }
 
 void SwarmLab::SendPosePacket()

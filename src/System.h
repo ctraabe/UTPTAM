@@ -67,6 +67,8 @@ class System
 
     void Exit() { Quit(); }
 
+    void ProcessCommand(char c);
+
   private:
     void CreateModules();
     void CreateMenu();

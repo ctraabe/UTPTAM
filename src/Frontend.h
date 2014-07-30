@@ -109,6 +109,8 @@ class Frontend {
       return mOnTrackedPoseUpdatedSlot.connect(slot);
     }
 
+    void ProcessCommand(char c);
+
     void ToggleMode();
     
 public:

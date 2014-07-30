@@ -23,6 +23,8 @@ class SwarmLab {
 		    int bHasTracking,
                     const HiResTimePoint &tpTime
 		    );
+
+    void SetCallback( const std::function<void(char c)>& _callback);
   private:
     void ProcessIncoming();
     void SendPosePacket();
@@ -37,6 +39,9 @@ class SwarmLab {
     HiResTimePoint mtpPoseTime;
     int mbHasTracking;
     bool mbPoseUpdated;
+
+    std::function<void(char c)> mFusionToPTAMCallback;
+
 };
 
 }

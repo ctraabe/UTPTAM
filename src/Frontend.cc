@@ -237,6 +237,12 @@ void Frontend::operator()()
   }
 }
 
+
+  void Frontend::ProcessCommand(char c) {
+    std::cout << "Received command " << c << std::endl;
+  }
+
+
 void Frontend::Reset()
 {
   mpInitialTracker->Reset();

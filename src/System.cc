@@ -252,6 +252,11 @@ void System::CreateModules()
   mModules.pSwarmLab = new SwarmLab();
 }
 
+
+  void System::ProcessCommand(char c) {
+    std::cout << "Received command " << c << std::endl;
+  }
+
   // Run the main system thread.
   // This handles the tracker and the map viewer.
 void System::Run()
@@ -270,6 +275,12 @@ void System::Run()
       std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
   mModules.pFrontend->system = this;
+
+  std::function<void(char c)> f = std::bind(&System::ProcessCommand,this,std::placeholders::_1);
+
+  SwarmLab& s = *mModules.pSwarmLab;
+
+  s.SetCallback(f);
 
   // Start threads
   std::thread mapMakerThread(std::ref(*mModules.pMapMaker));
