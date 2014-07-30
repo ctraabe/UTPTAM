@@ -120,7 +120,7 @@ uint16_t SwarmLab::Checksum(const uint8_t* data, size_t length) const
   return cs;
 }
 
-void SwarmLab::SendBuffer(uint8_t* data, int length)
+/*void SwarmLab::SendBuffer(uint8_t* data, int length)
 {
   uint8_t count = 0;
   while (length > 0) {
@@ -129,7 +129,7 @@ void SwarmLab::SendBuffer(uint8_t* data, int length)
     data += sent;
     if (++count == 255) break;
   }
-}
+  }*/
 
     
 void SwarmLab::UpdatePose(const TooN::SE3<> &se3Pose,

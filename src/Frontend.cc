@@ -190,19 +190,17 @@ void Frontend::operator()()
 
 
       if (!mbHasDeterminedScale) {
-        DetermineScaleFromMarker(fd, bUserInvoke);
+	  DetermineScaleFromMarker(fd, bUserInvoke);
       } else {
-        if (*gvnOutputCoordinatesLog) {
+	  if (*gvnOutputCoordinatesLog) {
 
-      if (*gvnOutputWorldCoordinates) {
-	  
-          auto timestamp = std::chrono::duration_cast<
-              std::chrono::microseconds>(fd.tpCaptureTime.time_since_epoch()).count();
-          if (fileCoordinateLog.is_open()) {
-            fileCoordinateLog << timestamp << " " << stopWatch.Elapsed() << " "
-              << mpTracker->RealWorldCoordinate() << std::endl;
-          }
-        }
+	      auto timestamp = std::chrono::duration_cast<
+		  std::chrono::microseconds>(fd.tpCaptureTime.time_since_epoch()).count();
+	      if (fileCoordinateLog.is_open()) {
+		  fileCoordinateLog << timestamp << " " << stopWatch.Elapsed() << " "
+				    << mpTracker->RealWorldCoordinate() << std::endl;
+	      }
+	  }
 
         SE3<> se3RotatedPose = se3CurrentPose;
 
