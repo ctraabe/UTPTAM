@@ -45,19 +45,16 @@ class MikroKopter {
     const float* GetMKData() const { return mMKToPTAM.single; }
 
   private:
-    void ConnectToFC(int nComPortId, int nComBaudrate);
-    void ConnectToNavi(int nComPortId, int nComBaudrate);
+    void ConnectToFC(const std::string &comport, const int baudrate);
 
     // MK message handlers
     void RecvPositionHold();
     void RecvMKToPTAM(const MKToPTAM_t& MKToPTAM);
     void RecvMKDebug(const MKDebug_t& mkDebug);
-    void RecvMKNavi(const MKNavi_t& mkNavi);
 
     void LogMKControl();
     void LogMKData();
     void LogMKDebug();
-    void LogMKNavi();
 
     mutable std::mutex mMutex;
 
@@ -69,22 +66,17 @@ class MikroKopter {
     bool mbLogMKControl;
     bool mbLogMKData;
     bool mbLogMKDebug;
-    bool mbLogMKNavi;
     TimeoutTimer mMKDebugRequestTimeout;
-    TimeoutTimer mMKNaviRequestTimeout;
     MKData_t mMKData;
     MKDebug_t mMKDebug;
-    MKNavi_t mMKNavi;
     MKToPTAM_t mMKToPTAM;
 
     MKConnection mFCConn;
-    MKConnection mNaviConn;
     TargetController mTargetController;
 
     std::ofstream mMKControlLogFile;
     std::ofstream mMKDataLogFile;
     std::ofstream mMKDebugLogFile;
-    std::ofstream mMKNaviLogFile;
 
     TimePoint mStartTime;
 };

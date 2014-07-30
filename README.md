@@ -30,7 +30,7 @@ sudo make install
 In the directory of your choice:
 (The directory may be discarded or kept to pull future updates)
 <pre><code>
-sudo apt-get install liblapack-dev
+sudo apt-get install liblapack-dev freeglut3-dev
 git clone https://github.com/edrosten/libcvd.git
 cd libcvd
 export CXXFLAGS=-D_REENTRANT
@@ -57,7 +57,7 @@ make clean
 
 Prerequisites:
 <pre><code>
-sudo apt-get install libv4l-dev libxi-dev libxmu-dev freeglut3-dev
+sudo apt-get install libv4l-dev libxi-dev libxmu-dev
 </code></pre>
 
 Create a symbolic link to videodev.h:
@@ -111,5 +111,5 @@ Now configure settings and make links to executables:
 <pre><code>
 cd ..
 cp settings_template.cfg settings.cfg
-ln -s build/bin/* .
+ln -s build/bin/UTPTAM .
 </code></pre>

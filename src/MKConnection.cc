@@ -5,13 +5,11 @@
 #include <cstdio>
 #include <cassert>
 
-#ifdef _WIN32
+#ifdef WIN32
 #include <Windows.h>
 #else
 #include <unistd.h>
 #endif
-
-#include "rs232.h"
 
 using namespace std;
 
@@ -33,27 +31,18 @@ enum TxCommands : uint8_t {
   TXCMD_NEW_TARGET    = 'x',
 };
 
-MKConnection::MKConnection(int comPortId, int baudrate)
-  : mOpen(false)
-  , mComPortId(comPortId)
+MKConnection::MKConnection(const std::string &comport, const int baudrate)
 {
-  if (OpenComport(comPortId, baudrate) == 0) {
-    mOpen = true;
+  mSerial = Serial(comport, baudrate);
+
+  if (mSerial) {
+    Buffer_Init(&mRxBuffer, mRxBufferData, RX_BUFFER_SIZE);
   }
-
-  if (!mOpen) {
-    cerr << "Failed to open COM port #" << comPortId << " @ " << baudrate << endl;
-  }
-
-  Buffer_Init(&mRxBuffer, mRxBufferData, RX_BUFFER_SIZE);
-}
-
-MKConnection::~MKConnection() {
 }
 
 void MKConnection::ProcessIncoming()
 {
-  assert(mOpen);
+  assert(mSerial);
 
   const int RX_BUFFER_SIZE = 4096;
   uint8_t buffer[RX_BUFFER_SIZE];
@@ -61,7 +50,7 @@ void MKConnection::ProcessIncoming()
 
   do {
     // Read from the COM port
-    readBytes = PollComport(mComPortId, buffer, RX_BUFFER_SIZE);
+    readBytes = mSerial.Read(buffer, RX_BUFFER_SIZE);
 
     // Handle the incoming data
     for (int i = 0; i < readBytes; ++i) {
@@ -87,9 +76,6 @@ void MKConnection::ProcessIncoming()
             break;
           case RXCMD_MK_DEBUG:
             HandleMKDebug(msg);
-            break;
-          case RXCMD_MK_NAVI:
-            HandleMKNavi(msg);
             break;
           case RXCMD_POSITION_HOLD:
             cout << "Received position hold request" << endl;
@@ -135,11 +121,6 @@ void MKConnection::RequestMKDebugInterval(uint8_t interval)
   SendData(TXCMD_MK_DEBUG_RQST, 1, &interval);
 }
 
-void MKConnection::RequestMKNaviInterval(uint8_t interval)
-{
-  SendData(TXCMD_MK_NAVI_RQST, 1, &interval);
-}
-
 void MKConnection::HandleMKToPTAM(const SerialMsg_t& msg)
 {
   const MKToPTAM_t *pMKToPTAM = reinterpret_cast<const MKToPTAM_t*>(msg.pData);
@@ -158,19 +139,13 @@ void MKConnection::HandleMKDebug(const SerialMsg_t& msg)
   mMKDebugCallback(*pMKDebug);
 }
 
-void MKConnection::HandleMKNavi(const SerialMsg_t& msg)
-{
-  const MKNavi_t *pMKNavi = reinterpret_cast<const MKNavi_t*>(msg.pData);
-  mMKNaviCallback(*pMKNavi);
-}
-
 void MKConnection::SendData(uint8_t cmdID, uint8_t dataLength, ...)  //uint8_t *data
 {
   va_list ap;
   Buffer_t txBuffer;  // Initialize a buffer for the packet
   uint8_t* pdata = NULL;
 
-  assert(mOpen);
+  assert(mSerial);
   Buffer_Init(&txBuffer, mTxBufferData, TX_BUFFER_SIZE);  // Initialize buffer
 
   va_start(ap, dataLength);
@@ -186,7 +161,7 @@ void MKConnection::SendData(uint8_t cmdID, uint8_t dataLength, ...)  //uint8_t *
   uint16_t length = txBuffer.DataBytes;
   uint8_t* data = txBuffer.pData;
   while (length > 0) {
-    int sent = SendBuf(mComPortId, data, length);
+    int sent = mSerial.SendBuffer(data, length);
     length -= sent;
     data += sent;
   }

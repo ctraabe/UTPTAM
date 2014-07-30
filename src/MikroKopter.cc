@@ -25,51 +25,40 @@ MikroKopter::MikroKopter(const Tracker* pTracker, PerformanceMonitor *pPerfMon)
   , mbLogMKData(false)
   , mbLogMKDebug(false)
   , mMKDebugRequestTimeout(2.0)
-  , mMKNaviRequestTimeout(2.0)
   , mMKData()  // zeros the structure
   , mMKDebug()  // zeros the structure
   , mMKToPTAM()  // zeros the structure
 {
   // Read COM port settings
-  int nFCComPort = GV3::get<int>("MKFlightCtrl.ComPortId", 16, SILENT); // 16 is /dev/ttyUSB0
-  int nMKFCBaud = GV3::get<int>("MKFlightCtrl.ComPortBaudrate", "57600", SILENT);
-  int nNaviComPort = GV3::get<int>("MKNaviCtrl.ComPortId", 17, SILENT); // 17 is /dev/ttyUSB1
-  int nMKNaviBaud = GV3::get<int>("MKNaviCtrl.ComPortBaudrate", "57600", SILENT);
-  ConnectToFC(nFCComPort, nMKFCBaud);
-  ConnectToNavi(nNaviComPort, nMKNaviBaud);
+  string comport = GV3::get<string>("MKFlightCtrl.ComPort", "/dev/ttyUSB1",
+    SILENT);
+  int baudrate = GV3::get<int>("MKFlightCtrl.ComPortBaudrate", "57600", SILENT);
+  ConnectToFC(comport, baudrate);
 
   // Log the control data
-  mbLogMKControl = GV3::get<int>("Debug.LogMKControl", 0, SILENT);
+  mbLogMKControl = GV3::get<int>("Log.MKControl", 0, SILENT);
   if (mbLogMKControl) {
-    mMKControlLogFile.open("mk_control.txt", ios::out | ios::trunc);
+    mMKControlLogFile.open("mk_control.log", ios::out | ios::trunc);
     if (!mMKControlLogFile) {
-      cerr << "Failed to open mk_control.txt" << endl;
+      cerr << "Failed to open mk_control.log" << endl;
     }
   }
+
   // Log the data stream from the FlightCtrl
-  mbLogMKData = GV3::get<int>("Debug.LogMKData", 0, SILENT);
+  mbLogMKData = GV3::get<int>("Log.MKData", 0, SILENT);
   if (mbLogMKData) {
-    mMKDataLogFile.open("mk_data.txt", ios::out | ios::trunc);
+    mMKDataLogFile.open("mk_data.log", ios::out | ios::trunc);
     if (!mMKDataLogFile) {
-      cerr << "Failed to open mk_data.txt" << endl;
+      cerr << "Failed to open mk_data.log" << endl;
     }
   }
 
   // Log the debug output stream from the FlightCtrl
-  mbLogMKDebug = GV3::get<int>("Debug.LogMKDebug", 0, SILENT);
+  mbLogMKDebug = GV3::get<int>("Log.MKDebug", 0, SILENT);
   if (mbLogMKDebug) {
-    mMKDebugLogFile.open("mk_debug.txt", ios::out | ios::trunc);
+    mMKDebugLogFile.open("mk_debug.log", ios::out | ios::trunc);
     if (!mMKDebugLogFile) {
-      cerr << "Failed to open mk_debug.txt" << endl;
-    }
-  }
-
-  // Log the navi data output stream from the NaviCtrl
-  mbLogMKNavi = GV3::get<int>("Debug.LogMKNavi", 0, SILENT);
-  if (mbLogMKNavi) {
-    mMKNaviLogFile.open("mk_navi.txt", ios::out | ios::trunc);
-    if (!mMKNaviLogFile) {
-      cerr << "Failed to open mk_navi.txt" << endl;
+      cerr << "Failed to open mk_debug.log" << endl;
     }
   }
 
@@ -98,16 +87,6 @@ void MikroKopter::operator()()
             mTargetController.GetEulerAngles(), mTargetController.GetConfig());
 
         mbUpdateReady = false;
-      }
-    }
-
-    if (mNaviConn) {
-      mNaviConn.ProcessIncoming();
-      if (mbLogMKNavi && mMKNaviRequestTimeout.HasTimedOut()) {
-        // Request debug data being sent from the MK, this has to be done every
-        // few seconds or the MK will stop sending the data
-        mNaviConn.RequestMKNaviInterval(10);  // Request data every 100ms (10 Hz)
-        mMKNaviRequestTimeout.Reset();
       }
     }
 
@@ -142,29 +121,18 @@ void MikroKopter::SetTargetAltitude(double altitude)
   mTargetController.SetTargetAltitude(altitude);
 }
 
-void MikroKopter::ConnectToFC(int nComPortId, int nComBaudrate)
+void MikroKopter::ConnectToFC(const string &comport, const int baudrate)
 {
   // Attempt connecting to the MK FlightCtrl
-  mFCConn = MKConnection(nComPortId, nComBaudrate);
+  mFCConn = MKConnection(comport, baudrate);
   if (!mFCConn) {
     cerr << "Failed to connect to MikroKopter FlightCtrl." << endl;
   } else {
+    cout << "Opened " << comport << " @ " << baudrate << " for MikroKopter" << endl;
     // Hook up all the callback functions
     mFCConn.SetPositionHoldCallback(std::bind(&MikroKopter::RecvPositionHold, this));
     mFCConn.SetMKToPTAMCallback(std::bind(&MikroKopter::RecvMKToPTAM, this, _1));
     mFCConn.SetMKDebugCallback(std::bind(&MikroKopter::RecvMKDebug, this, _1));
-  }
-}
-
-void MikroKopter::ConnectToNavi(int nComPortId, int nComBaudrate)
-{
-  // Attempt connecting to the MK NaviCtrl
-  mNaviConn = MKConnection(nComPortId, nComBaudrate);
-  if (!mNaviConn) {
-    cerr << "Failed to connect to MikroKopter NaviCtrl." << endl;
-  } else {
-    // Hook up all the callback functions
-    mNaviConn.SetMKNaviCallback(std::bind(&MikroKopter::RecvMKNavi, this, _1));
   }
 }
 
@@ -185,12 +153,6 @@ void MikroKopter::RecvMKToPTAM(const MKToPTAM_t& mkToPTAM)
 void MikroKopter::RecvMKDebug(const MKDebug_t& mkDebug)
 {
   mMKDebug = mkDebug;
-}
-
-void MikroKopter::RecvMKNavi(const MKNavi_t& mkNavi)
-{
-  mMKNavi = mkNavi;
-  if (mbLogMKNavi) LogMKNavi();
 }
 
 void MikroKopter::LogMKControl()
@@ -234,17 +196,6 @@ void MikroKopter::LogMKDebug()
   }
 
   mMKDebugLogFile << endl;
-}
-
-void MikroKopter::LogMKNavi()
-{
-  mMKNaviLogFile << std::chrono::duration_cast<RealSeconds>(Clock::now() - mStartTime).count();
-  mMKNaviLogFile << mMKNavi.CurrentPosition.Longitude;
-  mMKNaviLogFile << " " << mMKNavi.CurrentPosition.Latitude;
-  mMKNaviLogFile << " " << mMKNavi.CurrentPosition.Altitude;
-  mMKNaviLogFile << " " << (int16_t)mMKNavi.SatsInUse;
-
-  mMKNaviLogFile << endl;
 }
 
 }
