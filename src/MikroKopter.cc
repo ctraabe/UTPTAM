@@ -119,7 +119,7 @@ void MikroKopter::operator()()
   }
 }
 
-void MikroKopter::UpdatePose(const TooN::SE3<> &se3Pose, bool bHasTracking)
+void MikroKopter::UpdatePose(const TooN::SE3<> &se3Pose, int bHasTracking)
 {
   std::unique_lock<std::mutex> lock(mMutex);
   mbHasTracking = bHasTracking;

@@ -88,7 +88,7 @@ class FrameData;
 class Frontend {
     typedef std::chrono::high_resolution_clock Clock;
     typedef std::chrono::time_point<Clock> TimePoint;
-    typedef boost::signals2::signal<void (const SE3<>&, bool, TimePoint)> OnTrackedPoseUpdated;
+    typedef boost::signals2::signal<void (const SE3<>&, int, TimePoint)> OnTrackedPoseUpdated;
 
   public:
     Frontend(FrameGrabber *pFrameGrabber,

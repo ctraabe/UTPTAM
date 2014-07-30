@@ -188,19 +188,23 @@ void Frontend::operator()()
 
       if (!mbHasDeterminedScale) {
         DetermineScaleFromMarker(fd, bUserInvoke);
-      } else {
-        if (*gvnOutputWorldCoordinates) {
+      }
 
+      if (*gvnOutputWorldCoordinates) {
+	  
           auto timestamp = std::chrono::duration_cast<
               std::chrono::microseconds>(fd.tpCaptureTime.time_since_epoch()).count();
           coordinateLogFile << timestamp << " " << stopWatch.Elapsed() << " " << mpTracker->RealWorldCoordinate() << std::endl;
-        }
-
-        SE3<> se3RotatedPose = se3CurrentPose;
-
-        mOnTrackedPoseUpdatedSlot(se3RotatedPose, 
-            !mpTracker->IsLost(), fd.tpCaptureTime);
       }
+      
+      SE3<> se3RotatedPose = se3CurrentPose;
+      
+      // We should send both whether if we have track _and_ scale
+      unsigned char trackingStatus = !mpTracker->IsLost();
+      trackingStatus |= (mbHasDeterminedScale & 0x01) << 1;
+
+      mOnTrackedPoseUpdatedSlot(se3RotatedPose, 
+				trackingStatus, fd.tpCaptureTime);
 
       std::string logmsg = mpTracker->GetLogMessage();
       logfile << logmsg << std::endl;

@@ -123,14 +123,17 @@ void SwarmLab::SendBuffer(uint8_t* data, int length)
   }
 }
 
-void SwarmLab::UpdatePose(const TooN::SE3<> &se3Pose, bool bHasTracking,
-                          const HiResTimePoint &tpTime)
+    
+void SwarmLab::UpdatePose(const TooN::SE3<> &se3Pose,
+			  int bHasTracking,
+                          const HiResTimePoint &tpTime
+			  )
 {
-  std::unique_lock<std::mutex> lock(mMutex);
-  mse3CurrentPose = se3Pose;
-  mbHasTracking = bHasTracking;
-  mtpPoseTime = tpTime;
-  mbPoseUpdated = true;
+    std::unique_lock<std::mutex> lock(mMutex);
+    mse3CurrentPose = se3Pose;
+    mbHasTracking = (uint8_t)bHasTracking;
+    mtpPoseTime = tpTime;
+    mbPoseUpdated = true;
 }
 
 }

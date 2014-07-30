@@ -29,7 +29,7 @@ class MikroKopter {
 
     void StopThread() { mbDone = true; }
 
-    void UpdatePose(const TooN::SE3<> &se3Pose, bool bHasTracking);
+    void UpdatePose(const TooN::SE3<> &se3Pose, int bHasTracking);
 
     void GoToLocation(TooN::Vector<2> v2LocInWorld);
     void SetTargetAltitude(double altitude);

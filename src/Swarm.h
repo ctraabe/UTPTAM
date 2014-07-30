@@ -17,8 +17,10 @@ class SwarmLab {
     SwarmLab();
     void operator()();
     void StopThread() { mbDone = true; }
-    void UpdatePose(const TooN::SE3<> &se3Pose, bool bHasTracking,
-                    const HiResTimePoint &tpTime);
+    void UpdatePose(const TooN::SE3<> &se3Pose,
+		    int bHasTracking,
+                    const HiResTimePoint &tpTime
+		    );
   private:
     void SendPosePacket();
 
@@ -33,7 +35,7 @@ class SwarmLab {
 
     TooN::SE3<> mse3CurrentPose;
     HiResTimePoint mtpPoseTime;
-    bool mbHasTracking;
+    int mbHasTracking;
     bool mbPoseUpdated;
 };
 
