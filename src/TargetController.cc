@@ -39,7 +39,7 @@ void TargetController::Update(const SE3<> &se3Pose, bool bHasTracking, const Tim
   double dt = duration_cast<RealSeconds>(t - mLastUpdate).count(); // delta time in seconds
   mLastUpdate = t;
 
-  assert(dt > 0.0001);
+//  assert(dt > 0.0001);
   if (dt < 0.0001) {
     return;
   }

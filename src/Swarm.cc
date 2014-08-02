@@ -66,10 +66,10 @@ void SwarmLab::ProcessIncoming()
   int readBytes = 0;
 
   readBytes = mSerial.Read(buffer, RX_BUFFER_SIZE);
-  if (readBytes)
+  if (readBytes) {
     cout << "Received from serial: " << buffer[0] << endl;
-
     mFusionToPTAMCallback(buffer[0]);
+  }
 
 }
 

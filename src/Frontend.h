@@ -117,7 +117,7 @@ public:
     System* system;
     
   private:
-    void Reset();
+    void Reset(int mode = 0);
     void ProcessInitialization(bool bUserInvoke);
     void DetermineScaleFromMarker(const FrameData& fd, bool bUserInvoke);
 

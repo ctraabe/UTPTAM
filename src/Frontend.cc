@@ -240,10 +240,19 @@ void Frontend::operator()()
 
   void Frontend::ProcessCommand(char c) {
     std::cout << "Received command " << c << std::endl;
+    switch(c) {
+	case 'r':
+	    Reset(2);
+	    break;
+	default:
+	    break;
+	    
+    }
+    
   }
 
 
-void Frontend::Reset()
+void Frontend::Reset(int mode)
 {
   mpInitialTracker->Reset();
   mpTracker->Reset();
@@ -251,7 +260,7 @@ void Frontend::Reset()
   mbInitialTracking = true;
   mbHasDeterminedScale = false;
   mbSetScaleNextTime = false;
-  mbInitMode = 0;
+  mbInitMode = mode;
 }
 
 void Frontend::ProcessInitialization(bool bUserInvoke)
@@ -426,7 +435,7 @@ void Frontend::ProcessInitialization(bool bUserInvoke)
 
     if (bUserInvoke && vMatches.size() > 10) {
       SE3<> se3CurrentPose;
-   //   mpMapMaker->InitFromStereo(rightKF, mKeyFrame, vMatches, &se3CurrentPose, false);
+      //   mpMapMaker->InitFromStereo(rightKF, mKeyFrame, vMatches, &se3CurrentPose, false);
       mpMapMaker->InitFromKnownPlane(mKeyFrame, v4GroundPlane, se3CurrentPose);
       mpTracker->SetCurrentPose(se3CurrentPose);
       //mpTracker->ForceRecovery();

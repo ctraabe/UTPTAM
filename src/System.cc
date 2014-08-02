@@ -276,12 +276,18 @@ void System::Run()
       std::placeholders::_3));
   mModules.pFrontend->system = this;
 
+  /*
   std::function<void(char c)> f = std::bind(&System::ProcessCommand,this,std::placeholders::_1);
-
   SwarmLab& s = *mModules.pSwarmLab;
+  s.SetCallback(f);
+  */
 
+  
+  std::function<void(char c)> f = std::bind(&Frontend::ProcessCommand,&(*mModules.pFrontend),std::placeholders::_1);
+  SwarmLab& s = *mModules.pSwarmLab;
   s.SetCallback(f);
 
+  
   // Start threads
   std::thread mapMakerThread(std::ref(*mModules.pMapMaker));
   std::thread frontendThread(std::ref(*mModules.pFrontend));
