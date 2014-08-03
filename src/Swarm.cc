@@ -7,6 +7,7 @@
 #endif
 
 #include "MathUtils.h"
+#include "Quaternion.h"
 #include "Timing.h"
 
 #include <gvars3/gvars3.h>
@@ -30,6 +31,17 @@ SwarmLab::SwarmLab()
   int baudrate = GV3::get<int>("SwarmLab.ComPortBaudrate", "38400", SILENT);
 
   mSerial = Serial(comport, baudrate);
+
+  Vector<4> v = makeVector(1, 0, 0, 0);
+  // SO3<> test_SO3(v);
+  // SE3<> test_SE3(test_SO3, v);
+  Quaternion<> test(v);
+  cout << "=== TEST AAA === "
+    << test.get_array()[0]  << " "
+    << test.get_array()[1]  << " "
+    << test.get_array()[2]  << " "
+    << test.get_array()[3]  << " "
+    << endl;
 
   if (mSerial)
     cout << "Opened " << comport << " @ " << baudrate << " for SwarmLab" << endl;
@@ -80,9 +92,7 @@ void SwarmLab::SendPosePacket()
     uint8_t Header;
     uint64_t Time; // In microseconds since epoch
     float Position[3];
-    float Yaw;
-    float Pitch;
-    float Roll;
+    float Rotation[4];  // quaternion
     uint8_t HasTracking;
     uint16_t Checksum;
   } __attribute__((packed));
@@ -95,7 +105,7 @@ void SwarmLab::SendPosePacket()
 
   SE3<> se3WorldPose = mse3CurrentPose.inverse();
   Vector<3> v3Pos = se3WorldPose.get_translation();
-  Vector<3> v3YawPitchRoll = So3ToYawPitchRoll(se3WorldPose.get_rotation());
+  Quaternion<> qPose(se3WorldPose);
 
   auto timestamp = std::chrono::duration_cast<
       std::chrono::microseconds>(mtpPoseTime.time_since_epoch()).count();
@@ -105,9 +115,10 @@ void SwarmLab::SendPosePacket()
   uot.packet.Position[0] = v3Pos[0];
   uot.packet.Position[1] = v3Pos[1];
   uot.packet.Position[2] = v3Pos[2];
-  uot.packet.Yaw = v3YawPitchRoll[0];
-  uot.packet.Pitch = v3YawPitchRoll[1];
-  uot.packet.Roll = v3YawPitchRoll[2];
+  uot.packet.Rotation[0] = qPose[0];
+  uot.packet.Rotation[1] = qPose[1];
+  uot.packet.Rotation[2] = qPose[2];
+  uot.packet.Rotation[3] = qPose[3];
   uot.packet.HasTracking = (uint8_t)mbHasTracking;
   uot.packet.Checksum = 0;
 
