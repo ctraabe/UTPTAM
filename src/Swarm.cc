@@ -32,17 +32,6 @@ SwarmLab::SwarmLab()
 
   mSerial = Serial(comport, baudrate);
 
-  Vector<4> v = makeVector(1, 0, 0, 0);
-  // SO3<> test_SO3(v);
-  // SE3<> test_SE3(test_SO3, v);
-  Quaternion<> test(v);
-  cout << "=== TEST AAA === "
-    << test.get_array()[0]  << " "
-    << test.get_array()[1]  << " "
-    << test.get_array()[2]  << " "
-    << test.get_array()[3]  << " "
-    << endl;
-
   if (mSerial)
     cout << "Opened " << comport << " @ " << baudrate << " for SwarmLab" << endl;
 }
