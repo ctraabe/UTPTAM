@@ -12,6 +12,7 @@
 #include "FrameGrabber.h"
 #include "Utils.h"
 #include "FrontendRenderer.h"
+#include "Quaternion.h"
 
 #include <gvars3/GStringUtil.h>
 #include <cvd/image_io.h>
@@ -266,7 +267,7 @@ void System::Run()
       &MikroKopter::UpdatePose, mModules.pMikroKopter,
       std::placeholders::_1, std::placeholders::_2));
   mModules.pFrontend->DoOnTrackedPoseUpdated(std::bind(
-      &SwarmLab::UpdatePose, mModules.pSwarmLab,
+      &SwarmLab::UpdateTracking, mModules.pSwarmLab,
       std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
   mModules.pFrontend->system = this;
@@ -543,21 +544,20 @@ void System::DrawDebugInfo()
 
   mGLWindow.DrawBox( x, y, w, nLines, 0.7f );
 
-  stringstream os;
+  SE3<> mse3BW = mModules.pFrontend->monitor.GetBodyToWorld();
+  Quaternion<> mqBW(mse3BW);
+  Vector<3> mv3Pose = mqBW.ToERVector();
 
-  os << "Position: " << std:: fixed << std::setprecision(3) << mModules.pMikroKopter->GetPosInWorld() << endl << endl;
-  os << "EulerAngles: " << mModules.pMikroKopter->GetEulerAngles() << endl;
-  os << "Velocity: " << mModules.pMikroKopter->GetVelocity() << endl;
-  os << "Target: " << mModules.pMikroKopter->GetTargetOffset() << endl << endl;
-  os << "Control: " << mModules.pMikroKopter->GetControl()[0] << " "
-    << mModules.pMikroKopter->GetControl()[1] << " "
-    << mModules.pMikroKopter->GetControl()[2] << " "
-    << mModules.pMikroKopter->GetControl()[3] << " "
-    << mModules.pMikroKopter->GetControl()[4] << endl;
-  os << "Controller Config: " << (int)mModules.pMikroKopter->GetConfig() << endl << endl;
-  os << "Debug: " << mModules.pMikroKopter->GetMKData()[0] << " "
-    << mModules.pMikroKopter->GetMKData()[1] << " "
-    << mModules.pMikroKopter->GetMKData()[2] << endl << endl;
+  stringstream os;
+  os << "Position: " << std:: fixed << std::setprecision(3)
+    << mse3BW.get_translation() << endl;
+  os << endl;
+  os << "Rotation: " << mv3Pose[0] * 180. / M_PI << " "
+    << mv3Pose[1] * 180. / M_PI << " "
+    << mv3Pose[2] * 180. / M_PI << endl;
+  os << endl;
+  os << "Tracking status: " << mModules.pFrontend->monitor.GetTrackingStatus() << endl;
+  os << endl;
 
   glColor3f(1,1,0);
   mGLWindow.PrintString( ImageRef( x + nBorder , y + nBorder + 17), os.str() );

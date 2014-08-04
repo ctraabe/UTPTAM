@@ -33,7 +33,8 @@ class TargetController {
     typedef std::chrono::high_resolution_clock Clock;
     typedef std::chrono::time_point<Clock> TimePoint;
 
-    void Update(const TooN::SE3<> &se3Pose, bool bHasTracking, const TimePoint& t = Clock::now());
+    void Update(const TooN::SE3<> &se3Pose, int nTrackingStatus,
+      const TimePoint& t = Clock::now());
 
     void SetTarget(TooN::Vector<3> v3PosInWorld);
     void SetTargetLocation(TooN::Vector<2> v2LocInWorld);

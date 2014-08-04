@@ -12,7 +12,7 @@ typedef duration<double> RealSeconds;
 typedef std::chrono::high_resolution_clock Clock;
 typedef std::chrono::time_point<Clock> TimePoint;
 
-void TargetController::Update(const SE3<> &se3Pose, bool bHasTracking, const TimePoint& t)
+void TargetController::Update(const SE3<> &se3Pose, int nTrackingStatus, const TimePoint& t)
 {
   // Check if this is the first update
   if (mLastUpdate.time_since_epoch() == Clock::duration::zero()) {
@@ -39,12 +39,12 @@ void TargetController::Update(const SE3<> &se3Pose, bool bHasTracking, const Tim
   double dt = duration_cast<RealSeconds>(t - mLastUpdate).count(); // delta time in seconds
   mLastUpdate = t;
 
-//  assert(dt > 0.0001);
+  assert(dt > 0.0001);
   if (dt < 0.0001) {
     return;
   }
 
-  if (bHasTracking) {
+  if (nTrackingStatus) {
 
     mConfig |= TRACKING;
 
@@ -221,7 +221,7 @@ void TargetController::Update(const SE3<> &se3Pose, bool bHasTracking, const Tim
 
     mv3PrevPosInWorld = mv3PosInWorld;
     mReset = false;
-  } // end of if(bHasTracking)
+  } // end of if(nTrackingStatus)
   else {
     // Tracking was lost
     mControl[0] = 0.;

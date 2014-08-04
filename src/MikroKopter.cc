@@ -19,7 +19,7 @@ MikroKopter::MikroKopter(const Tracker* pTracker, PerformanceMonitor *pPerfMon)
   : mbDone(false)
   , mpTracker(pTracker)
   , mpPerfMon(pPerfMon)
-  , mbHasTracking(false)
+  , mnTrackingStatus(0)
   , mbUpdateReady(false)
   , mbLogMKControl(false)
   , mbLogMKData(false)
@@ -98,11 +98,12 @@ void MikroKopter::operator()()
   }
 }
 
-void MikroKopter::UpdatePose(const TooN::SE3<> &se3Pose, int bHasTracking)
+void MikroKopter::UpdatePose(const TooN::SE3<> &se3Pose,
+  const int nTrackingStatus)
 {
   std::unique_lock<std::mutex> lock(mMutex);
-  mbHasTracking = bHasTracking;
-  mTargetController.Update(se3Pose, bHasTracking, TargetController::Clock::now());
+  mnTrackingStatus = nTrackingStatus;
+  mTargetController.Update(se3Pose, nTrackingStatus, TargetController::Clock::now());
   mbUpdateReady = true;
   if (mbLogMKControl) LogMKControl();
 }

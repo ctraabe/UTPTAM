@@ -61,7 +61,7 @@ class MikroKopter {
     bool mbDone;
     const Tracker* mpTracker;
     PerformanceMonitor *mpPerfMon;
-    bool mbHasTracking;
+    int mnTrackingStatus;
     bool mbUpdateReady;
     bool mbLogMKControl;
     bool mbLogMKData;

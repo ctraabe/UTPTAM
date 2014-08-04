@@ -62,13 +62,15 @@ class Tracker
     std::string GetMessageForUser() const;
 
     bool IsLost() const { return mnLostFrames > NUM_LOST_FRAMES; }
+
+    // Pose means pose of the world in the camera frame.
     const SE3<>& GetCurrentPose() const{ return mse3CamFromWorld; }
     void SetCurrentPose(const SE3<> &se3Pose) {
-     mse3StartPos = mse3CamFromWorld = se3Pose;
+      mse3StartPos = mse3CamFromWorld = se3Pose;
     }
-    Vector<3> RealWorldCoordinate() const {
-      return mse3CamFromWorld.inverse().get_translation();
-    }
+
+    // Transform from vehicle body to world (vehicle position and orientation)
+    const SE3<>& GetBodyToWorld() const { return mse3BodyToWorld; }
 
     std::string GetLogMessage();
     void ForceRecovery() { if (mnLostFrames < NUM_LOST_FRAMES) mnLostFrames = NUM_LOST_FRAMES; }
@@ -92,6 +94,7 @@ class Tracker
     void AssessTrackingQuality();   // Heuristics to choose between good, poor, bad.
     void ApplyMotionModel();        // Decaying velocity motion model applied prior to TrackMap
     void UpdateMotionModel();       // Motion model is updated after TrackMap
+    void UpdateBodyToWorld();
     int SearchForPoints(std::vector<TrackerData*> &vTD,
                         int nRange,
                         int nFineIts);  // Finds points in the image
@@ -119,6 +122,7 @@ class Tracker
 
     KeyFrame *mpCurrentKF;            // The current working frame as a keyframe struct
     SE3<> mse3CamFromWorld;         // Camera pose: this is what the tracker updates every frame.
+    SE3<> mse3BodyToWorld;          // Vehicle body to world transformation (used to extract location and orientation)
     SE3<> mse3StartPos;             // What the camera pose was at the start of the frame.
     Vector<6> mv6CameraVelocity;    // Motion model
     double mdVelocityMagnitude;     // Used to decide on coarse tracking

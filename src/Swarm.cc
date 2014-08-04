@@ -22,9 +22,8 @@ namespace PTAMM {
 
 SwarmLab::SwarmLab()
   : mbDone(false)
-  , mtpPoseTime()
-  , mbHasTracking(false)
-  , mbPoseUpdated(false)
+  , mnTrackingStatus(0)
+  , mbTrackingUpdated(false)
 {
   // Read COM port settings
   string comport = GV3::get<string>("SwarmLab.ComPort", "/dev/ttyUSB0", SILENT);
@@ -44,9 +43,9 @@ void SwarmLab::operator()()
       ProcessIncoming();
 
       std::unique_lock<std::mutex> lock(mMutex);
-      if (mbPoseUpdated) {
-        SendPosePacket();
-        mbPoseUpdated = false;
+      if (mbTrackingUpdated) {
+        SendTrackingPacket();
+        mbTrackingUpdated = false;
       }
     }
 
@@ -54,9 +53,10 @@ void SwarmLab::operator()()
   }
 }
 
-  void SwarmLab::SetCallback( const std::function<void(char c)> &_callback) {
-    mFusionToPTAMCallback = _callback;
-  }
+void SwarmLab::SetCallback(const std::function<void(char c)> &_callback)
+{
+  mFusionToPTAMCallback = _callback;
+}
 
 void SwarmLab::ProcessIncoming()
 {
@@ -74,41 +74,39 @@ void SwarmLab::ProcessIncoming()
 
 }
 
-void SwarmLab::SendPosePacket()
+void SwarmLab::SendTrackingPacket() const
 {
   // Build the packet
-  struct PoseInfoPacket_t {
+  struct TrackingInfoPacket_t {
     uint8_t Header;
     uint64_t Time; // In microseconds since epoch
     float Position[3];
     float Rotation[4];  // quaternion
-    uint8_t HasTracking;
+    uint8_t TrackStatus;
     uint16_t Checksum;
   } __attribute__((packed));
 
-  const uint8_t len = sizeof(PoseInfoPacket_t);
+  const uint8_t len = sizeof(TrackingInfoPacket_t);
   union bus {
-    PoseInfoPacket_t packet;
+    TrackingInfoPacket_t packet;
     uint8_t bytes[len];
   } uot;
 
-  SE3<> se3WorldPose = mse3CurrentPose.inverse();
-  Vector<3> v3Pos = se3WorldPose.get_translation();
-  Quaternion<> qPose(se3WorldPose);
-
   auto timestamp = std::chrono::duration_cast<
-      std::chrono::microseconds>(mtpPoseTime.time_since_epoch()).count();
+      std::chrono::microseconds>(mtpTrackingTime.time_since_epoch()).count();
+
+  const Quaternion<> qBodyToWorld(mse3BodyToWorld);
 
   uot.packet.Header = 0xE5;
   uot.packet.Time = timestamp;
-  uot.packet.Position[0] = v3Pos[0];
-  uot.packet.Position[1] = v3Pos[1];
-  uot.packet.Position[2] = v3Pos[2];
-  uot.packet.Rotation[0] = qPose[0];
-  uot.packet.Rotation[1] = qPose[1];
-  uot.packet.Rotation[2] = qPose[2];
-  uot.packet.Rotation[3] = qPose[3];
-  uot.packet.HasTracking = (uint8_t)mbHasTracking;
+  uot.packet.Position[0] = (float)mse3BodyToWorld.get_translation()[0];
+  uot.packet.Position[1] = (float)mse3BodyToWorld.get_translation()[1];
+  uot.packet.Position[2] = (float)mse3BodyToWorld.get_translation()[2];
+  uot.packet.Rotation[0] = (float)qBodyToWorld[0];
+  uot.packet.Rotation[1] = (float)qBodyToWorld[1];
+  uot.packet.Rotation[2] = (float)qBodyToWorld[2];
+  uot.packet.Rotation[3] = (float)qBodyToWorld[3];
+  uot.packet.TrackStatus = (uint8_t)mnTrackingStatus;
   uot.packet.Checksum = 0;
 
   uot.packet.Checksum = Checksum(uot.bytes, sizeof(uot.packet));
@@ -127,28 +125,14 @@ uint16_t SwarmLab::Checksum(const uint8_t* data, size_t length) const
   return cs;
 }
 
-/*void SwarmLab::SendBuffer(uint8_t* data, int length)
-{
-  uint8_t count = 0;
-  while (length > 0) {
-    int sent = SendBuf(mnComPortId, data, length);
-    length -= sent;
-    data += sent;
-    if (++count == 255) break;
-  }
-  }*/
-
-    
-void SwarmLab::UpdatePose(const TooN::SE3<> &se3Pose,
-			  int bHasTracking,
-                          const HiResTimePoint &tpTime
-			  )
+void SwarmLab::UpdateTracking(const TooN::SE3<> &se3BodyToWorld,
+  const int nTrackingStatus, const HiResTimePoint &tpTime)
 {
     std::unique_lock<std::mutex> lock(mMutex);
-    mse3CurrentPose = se3Pose;
-    mbHasTracking = (uint8_t)bHasTracking;
-    mtpPoseTime = tpTime;
-    mbPoseUpdated = true;
+    mse3BodyToWorld = se3BodyToWorld;
+    mnTrackingStatus = (uint8_t)nTrackingStatus;
+    mtpTrackingTime = tpTime;
+    mbTrackingUpdated = true;
 }
 
 }

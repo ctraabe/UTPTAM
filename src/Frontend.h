@@ -21,11 +21,15 @@
 
 namespace PTAMM {
 
-class PerformanceMonitor;
-    class System;
-    
-struct FrontendDrawData {
+enum {
+  TRACKING_STATUS_NOT_LOST_BIT  = 0,
+  TRACKING_STATUS_HAS_SCALE_BIT = 1,
+};
 
+class PerformanceMonitor;
+class System;
+
+struct FrontendDrawData {
   FrontendDrawData()
     : bInitialTracking(true)
   {
@@ -54,8 +58,8 @@ class FrontendMonitor {
       : mbHasFrontendData(false)
       , mbUserInvoke(false)
       , mbUserResetInvoke(false)
-    {
-    }
+      , mnTrackingStatus(0)
+    {}
 
     void PushDrawData(FrontendDrawData &drawData);
     bool PopDrawData(FrontendDrawData &drawData);
@@ -66,8 +70,15 @@ class FrontendMonitor {
     void PushUserResetInvoke();
     bool PopUserResetInvoke();
 
-    void SetCurrentPose(const SE3<> &se3CurrenPose);
+    // Pose means pose of the world in the camera frame.
     SE3<> GetCurrentPose() const;
+    // Transform from vehicle body to world (contains position and orientation)
+    SE3<> GetBodyToWorld() const;
+    // Tracking status bit-field set according to enum at the top of this file.
+    int GetTrackingStatus() const;
+
+    void SetTrackingData(const SE3<> &se3CurrenPose,
+      const SE3<> &se3BodyToWorld, int nTrackingStatus);
 
   private:
     mutable std::mutex mMutex;
@@ -79,6 +90,8 @@ class FrontendMonitor {
     bool mbUserResetInvoke;
 
     SE3<> mse3CurrentPose;
+    SE3<> mse3BodyToWorld;
+    int mnTrackingStatus;
 };
 
 class FrameGrabber;
@@ -112,10 +125,9 @@ class Frontend {
     void ProcessCommand(char c);
 
     void ToggleMode();
-    
-public:
+
     System* system;
-    
+
   private:
     void Reset(int mode = 0);
     void ProcessInitialization(bool bUserInvoke);
@@ -128,7 +140,7 @@ public:
 
     // Which mode for initialization
     int mbInitMode;
-    
+
     ATANCamera mCamera;
     FrameGrabber *mpFrameGrabber;
     InitialTracker *mpInitialTracker;

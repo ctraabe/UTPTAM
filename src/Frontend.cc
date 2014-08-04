@@ -76,16 +76,31 @@ bool FrontendMonitor::PopUserResetInvoke()
   return false;
 }
 
-void FrontendMonitor::SetCurrentPose(const SE3<> &se3CurrenPose)
-{
-  std::lock_guard<std::mutex> lock(mMutex);
-  mse3CurrentPose = se3CurrenPose;
-}
-
 SE3<> FrontendMonitor::GetCurrentPose() const
 {
   std::lock_guard<std::mutex> lock(mMutex);
   return mse3CurrentPose;
+}
+
+SE3<> FrontendMonitor::GetBodyToWorld() const
+{
+  std::lock_guard<std::mutex> lock(mMutex);
+  return mse3BodyToWorld;
+}
+
+int FrontendMonitor::GetTrackingStatus() const
+{
+  std::lock_guard<std::mutex> lock(mMutex);
+  return mnTrackingStatus;
+}
+
+void FrontendMonitor::SetTrackingData(const SE3<> &se3CurrentPose,
+  const SE3<> &se3BodyToWorld, int nTrackingStatus)
+{
+  std::lock_guard<std::mutex> lock(mMutex);
+  mse3CurrentPose = se3CurrentPose;
+  mse3BodyToWorld = se3BodyToWorld;
+  mnTrackingStatus = nTrackingStatus;
 }
 
 Frontend::Frontend(FrameGrabber *pFrameGrabber,
@@ -111,12 +126,11 @@ Frontend::Frontend(FrameGrabber *pFrameGrabber,
   GV3::Register(mgvnFeatureDetector, "FeatureDetector", (int)PLAIN_FAST10, SILENT);
 
   mStereoProcessor.LoadCalibration("Data/intrinsics.yml", "Data/extrinsics.yml",
-                                   pFrameGrabber->GetFrameSize());
+    pFrameGrabber->GetFrameSize());
 
   gvar3<int> gvnInitMode("InitMode", 0, HIDDEN|SILENT) ;
   mbInitMode = *gvnInitMode;
   std::cout << "init mode: " << mbInitMode << std::endl;
-  
 }
 
 void Frontend::operator()()
@@ -159,7 +173,7 @@ void Frontend::operator()()
 
     // Initialize keyframe, find features etc
     mKeyFrame.InitFromImage(fd.imFrameBW[0],
-                            static_cast<FeatureDetector>(*mgvnFeatureDetector));
+      static_cast<FeatureDetector>(*mgvnFeatureDetector));
 
     // Set some of the draw data
     mDrawData.imFrame.copy_from(fd.imFrameRGB[0]);
@@ -185,43 +199,39 @@ void Frontend::operator()()
     mpTracker->ProcessFrame(mKeyFrame, bRunTracker);
 
     if (bRunTracker) {
-      const SE3<> &se3CurrentPose = mpTracker->GetCurrentPose();
-      monitor.SetCurrentPose(se3CurrentPose);
+      // Attempt to set scale from the fiducial if requested.
+      static gvar3<int> gvnUseMarker("Marker.Use", 0, SILENT);
+      if (*gvnUseMarker && !mbHasDeterminedScale)
+        DetermineScaleFromMarker(fd, bUserInvoke);
 
+      // Set the tracking status bit-field.
+      int trackingStatus;
+      trackingStatus = (!mpTracker->IsLost()) << TRACKING_STATUS_NOT_LOST_BIT;
+      trackingStatus |= (mbHasDeterminedScale) << TRACKING_STATUS_HAS_SCALE_BIT;
 
-      if (!mbHasDeterminedScale) {
-	  DetermineScaleFromMarker(fd, bUserInvoke);
-      } else {
-	  if (*gvnOutputCoordinatesLog) {
+      // Run the updated-pose callbacks.
+      mOnTrackedPoseUpdatedSlot(mpTracker->GetBodyToWorld(), trackingStatus,
+        fd.tpCaptureTime);
 
-	      auto timestamp = std::chrono::duration_cast<
-		  std::chrono::microseconds>(fd.tpCaptureTime.time_since_epoch()).count();
-	      if (fileCoordinateLog.is_open()) {
-		  fileCoordinateLog << timestamp << " " << stopWatch.Elapsed() << " "
-				    << mpTracker->RealWorldCoordinate() << std::endl;
-	      }
-	  }
+      // Set tracking data in the monitor (for safe reading by other threads).
+      monitor.SetTrackingData(mpTracker->GetCurrentPose(),
+        mpTracker->GetBodyToWorld(), trackingStatus);
 
-        SE3<> se3RotatedPose = se3CurrentPose;
-
-        mOnTrackedPoseUpdatedSlot(se3RotatedPose, 
-            !mpTracker->IsLost(), fd.tpCaptureTime);
-      }
-      
-      SE3<> se3RotatedPose = se3CurrentPose;
-      
-      // We should send both whether if we have track _and_ scale
-      unsigned char trackingStatus = !mpTracker->IsLost();
-      trackingStatus |= (mbHasDeterminedScale & 0x01) << 1;
-
-      mOnTrackedPoseUpdatedSlot(se3RotatedPose, 
-				trackingStatus, fd.tpCaptureTime);
-
-      std::string logmsg = mpTracker->GetLogMessage();
-      if (fileTrackerLog.is_open())
+      // Send messages to the log file (if open).
+      if (fileTrackerLog.is_open()) {
+        std::string logmsg = mpTracker->GetLogMessage();
         fileTrackerLog << logmsg << std::endl;
-      
-      
+      }
+
+      // Send tracking coordinates to a log file (if open).
+      if (*gvnOutputCoordinatesLog && fileCoordinateLog.is_open()) {
+        auto timestamp = std::chrono::duration_cast<
+          std::chrono::microseconds>(fd.tpCaptureTime.time_since_epoch()).count();
+        fileCoordinateLog << timestamp << " " << stopWatch.Elapsed() << " "
+          << mpTracker->GetBodyToWorld().get_translation() << " "
+          << trackingStatus << std::endl;
+      }
+
       mpTracker->GetDrawData(mDrawData.tracker);
       mDrawData.bHasDeterminedScale = mbHasDeterminedScale;
       mDrawData.se3MarkerPose = mse3MarkerPose;
@@ -237,20 +247,16 @@ void Frontend::operator()()
   }
 }
 
-
-  void Frontend::ProcessCommand(char c) {
-    std::cout << "Received command " << c << std::endl;
-    switch(c) {
-	case 'r':
-	    Reset(2);
-	    break;
-	default:
-	    break;
-	    
-    }
-    
+void Frontend::ProcessCommand(char c) {
+  std::cout << "Received command " << c << std::endl;
+  switch(c) {
+    case 'r':
+      Reset(2);
+      break;
+    default:
+      break;
   }
-
+}
 
 void Frontend::Reset(int mode)
 {
@@ -378,7 +384,6 @@ void Frontend::ProcessInitialization(bool bUserInvoke)
       }
     }
 
-
     if (vv3PlanePoints.size() > 10) {
       StereoPlaneFinder spf;
       spf.Update(vv3PlanePoints);
@@ -429,9 +434,7 @@ void Frontend::ProcessInitialization(bool bUserInvoke)
     Vector<4> v4GroundPlane = mStereoPlaneFinder.GetPlane();
     v4GroundPlane[3] *= 0.01; // Scale from cm to meters
 
-
     mDrawData.vBackProjectedPts = vBackProjectedPts;
-
 
     if (bUserInvoke && vMatches.size() > 10) {
       SE3<> se3CurrentPose;
@@ -450,62 +453,55 @@ void Frontend::ProcessInitialization(bool bUserInvoke)
   // STEREO NOT USED
   else {
     // Initial tracking path
-      switch(mbInitMode) {
-	  // Fully manual mode
-	  case 0:
-	      if (bUserInvoke) {
-		  mpInitialTracker->UserInvoke();
-	      }
+    switch(mbInitMode) {
+      // Fully manual mode
+      case 0:
+        if (bUserInvoke) {
+          mpInitialTracker->UserInvoke();
+        }
 
-	      mpInitialTracker->ProcessFrame(mKeyFrame);
-	      if (mpInitialTracker->IsDone()) {
-		  mpTracker->SetCurrentPose(mpInitialTracker->GetCurrentPose());
-		  mbInitialTracking = false;
-		  
-		  cout << "Inited to pose: " << mpInitialTracker->GetCurrentPose() << endl;
-	      }
+        mpInitialTracker->ProcessFrame(mKeyFrame);
+        if (mpInitialTracker->IsDone()) {
+          mpTracker->SetCurrentPose(mpInitialTracker->GetCurrentPose());
+          mbInitialTracking = false;
 
-	      mDrawData.bUseStereo = false;
-	      mDrawData.bInitialTracking = true;
-	      mDrawData.sStatusMessage = mpInitialTracker->GetMessageForUser();
-	      mpInitialTracker->GetDrawData(mDrawData.initialTracker);
-	      break;
+          cout << "Initiated pose to: " << mpInitialTracker->GetCurrentPose() << endl;
+        }
 
-	      // Semi automatic mode
-	  case 1:
-	      
-	      break;
+        mDrawData.bUseStereo = false;
+        mDrawData.bInitialTracking = true;
+        mDrawData.sStatusMessage = mpInitialTracker->GetMessageForUser();
+        mpInitialTracker->GetDrawData(mDrawData.initialTracker);
+        break;
 
-	      // Fully automatic mode
-	  case 2:
-	      mpInitialTracker->ProcessFrameAuto(mKeyFrame);
+      // Semi automatic mode
+      case 1:
+        break;
 
-	      if (mpInitialTracker->IsDone()) {
-		  mpTracker->SetCurrentPose(mpInitialTracker->GetCurrentPose());
-		  mbInitialTracking = false;
-		  
-		  cout << "Inited to pose: " << mpInitialTracker->GetCurrentPose() << endl;
-	      }	      
+      // Fully automatic mode
+      case 2:
+        mpInitialTracker->ProcessFrameAuto(mKeyFrame);
 
-	      
-	      mDrawData.bUseStereo = false;
-	      mDrawData.bInitialTracking = true;
-	      mDrawData.sStatusMessage = mpInitialTracker->GetMessageForUser();
-	      mpInitialTracker->GetDrawData(mDrawData.initialTracker);
-	      break;
-      }
-	      
+        if (mpInitialTracker->IsDone()) {
+          mpTracker->SetCurrentPose(mpInitialTracker->GetCurrentPose());
+          mbInitialTracking = false;
+
+          cout << "Initiated pose to: " << mpInitialTracker->GetCurrentPose() << endl;
+        }
+
+        mDrawData.bUseStereo = false;
+        mDrawData.bInitialTracking = true;
+        mDrawData.sStatusMessage = mpInitialTracker->GetMessageForUser();
+        mpInitialTracker->GetDrawData(mDrawData.initialTracker);
+        break;
+    }
   }
 }
 
-    void Frontend::ToggleMode() {
+void Frontend::ToggleMode() {
+  mbInitMode = (mbInitMode + 1) % 3;
+}
 
-	mbInitMode = (mbInitMode+1)%3;
-
-    }
-
-
-    
 void Frontend::DetermineScaleFromMarker(const FrameData& fd, bool bUserInvoke)
 {
   mbSetScaleNextTime = mbSetScaleNextTime || bUserInvoke;
@@ -513,12 +509,10 @@ void Frontend::DetermineScaleFromMarker(const FrameData& fd, bool bUserInvoke)
   SE3<> se3WorldFromNormWorld;
   double dScale = 1.0;
   if (mpScaleMarkerTracker->DetermineScaleFromMarker(fd.imFrameBW[0],
-                                                     mpTracker->GetCurrentPose(),
-                                                     se3WorldFromNormWorld, dScale))
+    mpTracker->GetCurrentPose(), se3WorldFromNormWorld, dScale))
   {
     // cout << "SCALE: " << dScale << endl;
     mse3MarkerPose = se3WorldFromNormWorld;
-
 
     if (mbSetScaleNextTime) {
 
@@ -534,8 +528,6 @@ void Frontend::DetermineScaleFromMarker(const FrameData& fd, bool bUserInvoke)
       cout << "Scale is set! " <<  dScale << endl;
     }
   }
-
-
 }
 
 }

@@ -19,26 +19,25 @@ class SwarmLab {
     SwarmLab();
     void operator()();
     void StopThread() { mbDone = true; }
-    void UpdatePose(const TooN::SE3<> &se3Pose,
-		    int bHasTracking,
-                    const HiResTimePoint &tpTime
-		    );
+    void UpdateTracking(const TooN::SE3<> &se3BodyToWorld,
+      const int bHasTracking, const HiResTimePoint &tpTime);
 
     void SetCallback( const std::function<void(char c)>& _callback);
+
   private:
     void ProcessIncoming();
-    void SendPosePacket();
+    void SendTrackingPacket() const;
     uint16_t Checksum(const uint8_t* data, size_t length) const;
-  private:
+
     bool mbDone;
     std::mutex mMutex;
 
     Serial mSerial;
 
-    TooN::SE3<> mse3CurrentPose;
-    HiResTimePoint mtpPoseTime;
-    int mbHasTracking;
-    bool mbPoseUpdated;
+    TooN::SE3<> mse3BodyToWorld;
+    HiResTimePoint mtpTrackingTime;
+    int mnTrackingStatus;
+    bool mbTrackingUpdated;
 
     std::function<void(char c)> mFusionToPTAMCallback;
 

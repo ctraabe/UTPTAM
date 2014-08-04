@@ -228,6 +228,8 @@ void Tracker::ProcessFrame(KeyFrame &keyFrame, bool bRunTracker)
 
       UpdateMotionModel();      // 3.
 
+      UpdateBodyToWorld();      //  Update the vehicle body to world transform
+
       AssessTrackingQuality();  //  Check if we're lost or if tracking is poor.
 
       // Provide some feedback for the user:
@@ -843,6 +845,22 @@ void Tracker::UpdateMotionModel()
   Vector<6> v6 = mv6CameraVelocity;
   v6.slice<0,3>() *= 1.0 / mpCurrentKF->dSceneDepthMean;
   mdMSDScaledVelocityMagnitude = sqrt(v6*v6);
+}
+
+/**
+ * Update the transformation from the vehicle body (CG) to the world origin
+ * based on the current pose of the world in the camera frame and user specified
+ * geometric relation between the vehicle CG and the position and orientation of
+ * the camera. This transformation carries directly the position and orientation
+ * of the vehicle cg in the world frame.
+ */
+void Tracker::UpdateBodyToWorld()
+{
+  static gvar3<Vector<3> > gvv3CameraBodyLocation("Tracker.CameraBodyLocation", "[0. 0. 0.]", SILENT);
+  static gvar3<Vector<3> > gvv3CameraBodyRotation("Tracker.CameraBodyRotation", "[0. 0. 0.]", SILENT);
+  static SE3<> mse3CameraToBody(*gvv3CameraBodyRotation, *gvv3CameraBodyLocation);
+  static SE3<> mse3BodyToCamera(mse3CameraToBody.inverse());
+  mse3BodyToWorld = mse3CamFromWorld.inverse() * mse3BodyToCamera;
 }
 
 /**

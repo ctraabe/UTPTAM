@@ -50,7 +50,7 @@ public:
     }
   }
 
-  Precision & operator[] (const int index) {
+  Precision operator[] (const int index) const {
     assert(index >= 0 && index < 4);
     return my_array[index];
   }
@@ -78,10 +78,10 @@ public:
     Precision norm_squared = my_array[0] * my_array[0]
       + my_array[1] * my_array[1] + my_array[2] * my_array[2]
       + my_array[3] * my_array[3];
-    if (norm_squared == 0.0) {
-      my_array[0] = 1.0;
-    } else if (norm_squared != 1.0) {
-      Precision norm_inverse = 1.0 / std::sqrt(norm_squared);
+    if (norm_squared == 0.) {
+      my_array[0] = 1.;
+    } else if (norm_squared != 1.) {
+      Precision norm_inverse = 1. / std::sqrt(norm_squared);
       my_array[0] *= norm_inverse;
       my_array[1] *= norm_inverse;
       my_array[2] *= norm_inverse;
@@ -95,6 +95,18 @@ public:
     ret.my_array[1] = -ret.my_array[1];
     ret.my_array[2] = -ret.my_array[2];
     ret.my_array[3] = -ret.my_array[3];
+    return ret;
+  }
+
+  Vector<3, Precision> ToERVector() const {
+    Vector<3, Precision> ret(Zeros);
+    if (std::abs(my_array[0]) < 1.) {
+      Precision alpha = 2 * std::acos(my_array[0]);
+      Precision c = alpha / std::sqrt(1. - my_array[0] * my_array[0]);
+      ret[0] = my_array[1] * c;
+      ret[1] = my_array[2] * c;
+      ret[2] = my_array[3] * c;
+    }
     return ret;
   }
 
@@ -133,6 +145,13 @@ private:
       my_array[1] = (R[0][2] + R[2][0]) * s;
       my_array[2] = (R[1][2] + R[2][1]) * s;
       my_array[3] = 0.5 * r;
+    }
+
+    if (my_array[0] < 0.) {
+      my_array[0] = -my_array[0];
+      my_array[1] = -my_array[1];
+      my_array[2] = -my_array[2];
+      my_array[3] = -my_array[3];
     }
   }
 
