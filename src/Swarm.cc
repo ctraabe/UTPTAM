@@ -49,7 +49,7 @@ void SwarmLab::operator()()
       }
     }
 
-    rateLimiter.Limit(500.0); // Limit to 500 Hz
+    rateLimiter.Limit(50.0); // Limit to 50 Hz
   }
 }
 
