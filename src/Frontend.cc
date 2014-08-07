@@ -186,7 +186,7 @@ void Frontend::operator()()
 
     if (bUserResetInvoke) {
       // Go back to initial tracking again
-      Reset();
+      Reset(mbInitMode);
     }
 
     mpPerfMon->StartTimer("tracking_total");
