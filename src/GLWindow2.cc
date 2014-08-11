@@ -276,7 +276,7 @@ void GLWindow2::on_mouse_down(GLWindow& win, CVD::ImageRef where, int state, int
 
   if( !bHandled ) {
     ostringstream os;
-    os << "Mouse.Click " << button << " " << where.x << " " << where.y << endl;
+    os << "MouseClick " << button << " " << where.x << " " << where.y << endl;
     GUI.ParseLine( os.str() );
   }
 
@@ -299,7 +299,7 @@ void GLWindow2::on_mouse_up(GLWindow& win, CVD::ImageRef where, int state, int b
 void GLWindow2::on_event(GLWindow& win, int event)
 {
   if(event==EVENT_CLOSE)
-    GUI.ParseLine("quit");
+    GUI.ParseLine("Quit");
 }
 
 pair<Vector<6>, Vector<6> > GLWindow2::GetMousePoseUpdate()

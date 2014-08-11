@@ -65,7 +65,7 @@ class System
 
     void Run();
 
-    void Exit() { Quit(); }
+    void Quit() { mbDone = true; }
 
   private:
     void CreateModules();
@@ -81,7 +81,6 @@ class System
 
     void HandleClick(int nButton, const CVD::ImageRef &irWin);
 
-    void Quit() { mbDone = true; }
     bool SwitchMap(int nMapNum, bool bForce = false);                                    // Switch to a particular map.
     void NewMap();                                  // Create a new map and move all elements to it
     bool DeleteMap(int nMapNum);                  // Delete a specified map

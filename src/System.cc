@@ -111,10 +111,13 @@ System::~System()
 void System::CreateMenu()
 {
   // Register all commands
-  GUI.RegisterCommand("exit", GUICommandCallBack, this);
-  GUI.RegisterCommand("quit", GUICommandCallBack, this);
-
+  GUI.RegisterCommand("Quit", GUICommandCallBack, this);
+  GUI.RegisterCommand("Reset", GUICommandCallBack, this);
+  GUI.RegisterCommand("PokeTracker", GUICommandCallBack, this);
+  GUI.RegisterCommand("InitMode", GUICommandCallBack, this);
   GUI.RegisterCommand("Realign", GUICommandCallBack, this);
+
+  GUI.RegisterCommand("ChangeFeatureDetector", GUICommandCallBack, this);
 
   GUI.RegisterCommand("LoadMap", GUICommandCallBack, this);
   GUI.RegisterCommand("SaveMap", GUICommandCallBack, this);
@@ -125,16 +128,15 @@ void System::CreateMenu()
   GUI.RegisterCommand("AddWaypoint", GUICommandCallBack, this);
   GUI.RegisterCommand("PositionHold", GUICommandCallBack, this);
 
-  GUI.RegisterCommand("ChangeFeatureDetector", GUICommandCallBack, this);
-
   GUI.RegisterCommand("KeyPress", GUICommandCallBack, this);
-  GUI.RegisterCommand("Mouse.Click", GUICommandCallBack, this);
+  GUI.RegisterCommand("MouseClick", GUICommandCallBack, this);
 
   // Create the menus
   GUI.ParseLine("GLWindow.AddMenu Menu Menu");
-  GUI.ParseLine("Menu.AddMenuButton Root Reset Reset Root");
-  GUI.ParseLine("Menu.AddMenuButton Root Realign Realign Root");
-  GUI.ParseLine("Menu.AddMenuButton Root Spacebar PokeTracker Root");
+  GUI.ParseLine("Menu.AddMenuButton Root \"Reset\" Reset Root");
+  GUI.ParseLine("Menu.AddMenuButton Root \"Spacebar\" PokeTracker Root");
+  GUI.ParseLine("Menu.AddMenuButton Root \"Realign\" Realign Root");
+  GUI.ParseLine("Menu.AddMenuButton Root \"Init. Mode\" InitMode Root");
   GUI.ParseLine("Menu.AddMenuToggle Root \"Debug Info\" DrawDebugInfo Root");
   GUI.ParseLine("Menu.AddMenuToggle Root \"Perf. Info\" DrawPerfInfo Root");
 
@@ -162,6 +164,8 @@ void System::CreateMenu()
   GUI.ParseLine("HelicopterMenu.AddMenuButton Root \"Fly path\" FlyPath Root");
   GUI.ParseLine("HelicopterMenu.AddMenuButton Root \"Add waypoint\" AddWaypoint Root");
   GUI.ParseLine("HelicopterMenu.AddMenuButton Root \"Position Hold\" PositionHold Root");
+
+  GUI.ParseLine("Menu.ShowMenu Root");
 }
 
 void System::CreateModules()
@@ -344,32 +348,54 @@ void System::GUICommandCallBack(void *ptr, string sCommand, string sParams)
 
 void System::GUICommandCallBack(const string &sCommand, const string &sParams)
 {
-  if( sCommand=="quit" || sCommand == "exit" ) {
+  if (sCommand == "Quit" || (sCommand == "KeyPress" && (sParams == "q"
+    || sParams == "Escape")))
+  {
     Quit();
   }
-  else if(sCommand == "Realign") {
+  else if (sCommand == "Reset" || (sCommand == "KeyPress" && (sParams == "r")))
+  {
+    mModules.pFrontend->monitor.PushUserResetInvoke();
+  }
+  else if (sCommand == "PokeTracker" || (sCommand == "KeyPress" &&
+    (sParams == "Space")))
+  {
+    mModules.pFrontend->monitor.PushUserInvoke();
+  }
+  else if (sCommand == "InitMode" || (sCommand == "KeyPress"
+    && (sParams == "m")))
+  {
+    mModules.pFrontend->ToggleMode();
+  }
+  else if (sCommand == "Realign")
+  {
     mModules.pMapMaker->RealignGroundPlane(true);
   }
-  else if( sCommand == "SaveMap" || sCommand == "SaveMaps" || sCommand == "LoadMap")  {
-    StartMapSerialization( sCommand, sParams );
+  else if (sCommand == "SaveMap" || sCommand == "SaveMaps"
+    || sCommand == "LoadMap")
+  {
+    StartMapSerialization(sCommand, sParams);
   }
-  else if( sCommand == "PositionHold")  {
+  else if (sCommand == "PositionHold")
+  {
     PositionHold();
   }
-  else if( sCommand == "AddWaypoint")  {
+  else if (sCommand == "AddWaypoint")
+  {
     AddWaypoint();
   }
-  else if( sCommand == "ClearWaypoints")  {
+  else if (sCommand == "ClearWaypoints")
+  {
     ClearWaypoints();
   }
-  else if( sCommand == "ChangeFeatureDetector") {
+  else if (sCommand == "ChangeFeatureDetector")
+  {
     ChangeFeatureDetector();
   }
-  else if( sCommand == "Mouse.Click" ) {
+  else if (sCommand == "MouseClick")
+  {
     vector<string> vs = ChopAndUnquoteString(sParams);
-    if( vs.size() != 3 ) {
-      return;
-    }
+    if( vs.size() != 3 ) return;
 
     istringstream is(sParams);
     int nButton;
@@ -383,20 +409,8 @@ void System::GUICommandCallBack(const string &sCommand, const string &sParams)
     if(sParams == "g") {
       mbDisableRendering = !mbDisableRendering;
     }
-    else if(sParams == "q" || sParams == "Escape") {
-      GUI.ParseLine("quit");
-    }
-    else if(sParams == "r") {
-      mModules.pFrontend->monitor.PushUserResetInvoke();
-    }
-    else if(sParams == "Space") {
-      mModules.pFrontend->monitor.PushUserInvoke();
-    }
     else if(sParams == "f") {
       mModules.pFrameGrabber->SetFreezeFrame(!mModules.pFrameGrabber->IsFrameFrozen());
-    }
-    else if(sParams == "m") {
-	mModules.pFrontend->ToggleMode();
     }
   }
 }

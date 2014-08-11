@@ -168,7 +168,7 @@ void Frontend::operator()()
     const FrameData& fd = mpFrameGrabber->GrabFrame(valid);
 
     if(!valid) {
-      system->Exit();
+      system->Quit();
     }
 
     // Initialize keyframe, find features etc
