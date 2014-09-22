@@ -504,7 +504,7 @@ void Frontend::ToggleMode() {
 
 void Frontend::DetermineScaleFromMarker(const FrameData& fd, bool bUserInvoke)
 {
-  mbSetScaleNextTime = mbSetScaleNextTime || bUserInvoke;
+  mbSetScaleNextTime = mbSetScaleNextTime || bUserInvoke || mbInitMode;
 
   SE3<> se3WorldFromNormWorld;
   double dScale = 1.0;

@@ -67,6 +67,7 @@ class Tracker
     const SE3<>& GetCurrentPose() const{ return mse3CamFromWorld; }
     void SetCurrentPose(const SE3<> &se3Pose) {
       mse3StartPos = mse3CamFromWorld = se3Pose;
+      UpdateBodyToWorld();
     }
 
     // Transform from vehicle body to world (vehicle position and orientation)

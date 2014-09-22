@@ -39,12 +39,12 @@ int main(int argc, char *argv[])
   cout << "  --------------- " << endl;
   cout << endl;
 
+  ParseOptions(argc, argv);
+
   GUI.parseArguments(argc, argv);
   GUI.LoadFile(settingsFilename);
-  GUI.StartParserThread(); // Start parsing of the console input
-  atexit(GUI.StopParserThread);
-
-  ParseOptions(argc, argv);
+  // GUI.StartParserThread(); // Start parsing of the console input
+  // atexit(GUI.StopParserThread);
 
   try
   {
