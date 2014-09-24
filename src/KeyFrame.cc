@@ -70,10 +70,10 @@ Level& Level::operator=(const Level &rhs)
   return *this;
 }
 
-void Level::Init(size_t nWidth, size_t nHeight, size_t nGridRows, size_t nGridCols)
+void Level::Init(size_t nWidth, size_t nHeight, size_t nGridRows, size_t nGridCols, size_t nBarrier)
 {
   assert(mpFeatureGrid == NULL);
-  mpFeatureGrid = new FeatureGrid(nWidth, nHeight, nGridRows, nGridCols);
+  mpFeatureGrid = new FeatureGrid(nWidth, nHeight, nGridRows, nGridCols, nBarrier);
 }
 
 void Level::SetTargetFeatureCount(size_t nMinFeatures, size_t nMaxFeatures)
@@ -148,13 +148,14 @@ KeyFrame::KeyFrame(const ATANCamera &cam)
 
   int width = std::round(cam.GetImageSize()[0]);
   int height = std::round(cam.GetImageSize()[1]);
+  int nBarrier[4] = { 10, 15, 15, 10 };
 
   for (int i = 0; i < LEVELS; ++i) {
     // Choose number of rows and cols so that the cell size is close to 50x50
     int cols = std::round((double)width / DESIRED_CELL_SIZE);
     int rows = std::round((double)height / DESIRED_CELL_SIZE);
     rows = cols = 1;
-    aLevels[i].Init(width, height, rows, cols);
+    aLevels[i].Init(width, height, rows, cols, nBarrier[i]);
     width /= 2; height /= 2;
   }
 

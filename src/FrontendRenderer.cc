@@ -56,7 +56,7 @@ void FrontendRenderer::DrawTrails(const std::vector<std::pair<CVD::ImageRef, CVD
 void FrontendRenderer::DrawCorners(const std::vector<CVD::ImageRef> &vCorners)
 {
   glColor3f(1,0,1);
-  glPointSize(4);
+  glPointSize(1);
   glBegin(GL_POINTS);
   for (auto c = vCorners.begin(); c != vCorners.end(); ++c) {
     glVertex(*c);

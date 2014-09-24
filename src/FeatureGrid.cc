@@ -181,12 +181,13 @@ void FeatureGrid::FindFeatures(const CVD::BasicImage<CVD::byte> &im)
     }
 
     size_t nFoundCorners = vTmpCorners.size();
-
+/*
     if (nFoundCorners > mnMaxFeaturesPerCell) {
       cell.nBarrier = std::min(cell.nBarrier + 1, 100);
     } else if (nFoundCorners < mnMinFeaturesPerCell) {
       cell.nBarrier = std::max(cell.nBarrier - 1, 5);
     }
+*/
   }
 }
 

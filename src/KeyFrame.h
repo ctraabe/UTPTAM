@@ -61,7 +61,7 @@ class Level {
     Level(const Level& rhs);
     ~Level();
 
-    void Init(size_t nWidth, size_t nHeight, size_t nGridRows, size_t nGridCols);
+    void Init(size_t nWidth, size_t nHeight, size_t nGridRows, size_t nGridCols, size_t nBarrier);
     void SetTargetFeatureCount(size_t nMinFeatures, size_t nMaxFeatures);
 
     Level& operator=(const Level &rhs);
