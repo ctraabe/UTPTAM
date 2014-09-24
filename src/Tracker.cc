@@ -167,15 +167,22 @@ void Tracker::UpdateStatsMessage()
 	if(mTrackingQuality == DODGY) str << "1 ";
 	if(mTrackingQuality == BAD)   str << "0 ";
 	
-	for(int i=0; i<LEVELS; i++) {
-	    str << manMeasFound[i] << " " << manMeasAttempted[i] << " ";
-	}
-	
 	str << mpMap->MapID() << " "
 	    << mpMap->GetMapPoints().size() << " " << mpMap->GetKeyFrames().size() << " " << gDist;
 
 	return str.str();
-    }	
+    }
+
+
+    std::string Tracker::GetPointsInfo() {
+	stringstream str;
+
+	for(int i=0; i<LEVELS; i++) {
+	    str << manMeasFound[i] << " " << manMeasAttempted[i] << " ";
+	}
+
+	return str.str();
+    }
     
     
 // TrackFrame is called by System.cc with each incoming video frame.

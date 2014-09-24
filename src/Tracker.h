@@ -74,6 +74,7 @@ class Tracker
     const SE3<>& GetBodyToWorld() const { return mse3BodyToWorld; }
 
     std::string GetLogMessage();
+    std::string GetPointsInfo();
     void ForceRecovery() { if (mnLostFrames < NUM_LOST_FRAMES) mnLostFrames = NUM_LOST_FRAMES; }
     void Reset();                   // Restart from scratch. Also tells the mapmaker to reset itself.
 

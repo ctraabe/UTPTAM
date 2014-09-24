@@ -225,10 +225,11 @@ void Frontend::operator()()
 
       // Send tracking coordinates to a log file (if open).
       if (*gvnOutputCoordinatesLog && fileCoordinateLog.is_open()) {
+	  std::string pointsinfo = mpTracker->GetPointsInfo();
         auto timestamp = std::chrono::duration_cast<
           std::chrono::microseconds>(fd.tpCaptureTime.time_since_epoch()).count();
         fileCoordinateLog << timestamp << " " << stopWatch.Elapsed() << " "
-          << mpTracker->GetBodyToWorld().get_translation() << " "
+			  << mpTracker->GetBodyToWorld().get_translation() << " " << pointsinfo 
           << trackingStatus << std::endl;
       }
 
