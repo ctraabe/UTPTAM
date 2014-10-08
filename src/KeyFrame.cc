@@ -148,7 +148,19 @@ KeyFrame::KeyFrame(const ATANCamera &cam)
 
   int width = std::round(cam.GetImageSize()[0]);
   int height = std::round(cam.GetImageSize()[1]);
-  int nBarrier[4] = { 10, 15, 15, 10 };
+  int nBarrier[4];
+
+  static gvar3<int> gvnBarrier0("FAST.Barrier0", 10, SILENT);
+  static gvar3<int> gvnBarrier1("FAST.Barrier1", 15, SILENT);
+  static gvar3<int> gvnBarrier2("FAST.Barrier2", 15, SILENT);
+  static gvar3<int> gvnBarrier3("FAST.Barrier3", 10, SILENT);
+
+  nBarrier[0] = *gvnBarrier0;
+  nBarrier[1] = *gvnBarrier1;
+  nBarrier[2] = *gvnBarrier2;
+  nBarrier[3] = *gvnBarrier3;
+
+  cout << nBarrier[0] << endl;
 
   for (int i = 0; i < LEVELS; ++i) {
     // Choose number of rows and cols so that the cell size is close to 50x50
