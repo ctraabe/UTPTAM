@@ -160,8 +160,6 @@ KeyFrame::KeyFrame(const ATANCamera &cam)
   nBarrier[2] = *gvnBarrier2;
   nBarrier[3] = *gvnBarrier3;
 
-  cout << nBarrier[0] << endl;
-
   for (int i = 0; i < LEVELS; ++i) {
     // Choose number of rows and cols so that the cell size is close to 50x50
     int cols = std::round((double)width / DESIRED_CELL_SIZE);
