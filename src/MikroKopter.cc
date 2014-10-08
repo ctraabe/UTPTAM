@@ -68,10 +68,10 @@ MikroKopter::MikroKopter(const Tracker* pTracker, PerformanceMonitor *pPerfMon)
 void MikroKopter::operator()()
 {
   RateLimiter rateLimiter;
-  static int counter = 0;
+  static int use = GV3::get<int>("MKFlightCtrl.Active", "0", SILENT);
 
   while (!mbDone) {
-    if (mFCConn) {
+    if (mFCConn && use) {
       mFCConn.ProcessIncoming();
 
       // Don't try to send two commands on the same frame
@@ -94,18 +94,20 @@ void MikroKopter::operator()()
     rateLimiter.Limit(256.0);
 
     mpPerfMon->UpdateRateCounter("mk");
-    counter++;
   }
 }
 
 void MikroKopter::UpdatePose(const TooN::SE3<> &se3Pose,
   const int nTrackingStatus)
 {
-  std::unique_lock<std::mutex> lock(mMutex);
-  mnTrackingStatus = nTrackingStatus;
-  mTargetController.Update(se3Pose, nTrackingStatus, TargetController::Clock::now());
-  mbUpdateReady = true;
-  if (mbLogMKControl) LogMKControl();
+  static int use = GV3::get<int>("MKFlightCtrl.Active", "0", SILENT);
+  if (use) {
+    std::unique_lock<std::mutex> lock(mMutex);
+    mnTrackingStatus = nTrackingStatus;
+    mTargetController.Update(se3Pose, nTrackingStatus, TargetController::Clock::now());
+    mbUpdateReady = true;
+    if (mbLogMKControl) LogMKControl();
+  }
 }
 
 void MikroKopter::GoToLocation(TooN::Vector<2> v2LocInWorld)
