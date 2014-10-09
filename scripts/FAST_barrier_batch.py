@@ -16,10 +16,10 @@ for Barrier0 in range(minv, maxv + interval, interval):
         os.system(cmd)
 
         myfile = open(r"settings.cfg","a")
-        myfile.write("\n" + "Tracker.Barrier0=" + str(Barrier0))
-        myfile.write("\n" + "Tracker.Barrier1=" + str(Barrier1))
-        myfile.write("\n" + "Tracker.Barrier2=" + str(Barrier2))
-        myfile.write("\n" + "Tracker.Barrier3=" + str(Barrier3))
+        myfile.write("\n" + "FAST.Barrier0=" + str(Barrier0))
+        myfile.write("\n" + "FAST.Barrier1=" + str(Barrier1))
+        myfile.write("\n" + "FAST.Barrier2=" + str(Barrier2))
+        myfile.write("\n" + "FAST.Barrier3=" + str(Barrier3))
         myfile.close()
 
         cmd = './UTPTAM'
