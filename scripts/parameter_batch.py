@@ -10,6 +10,7 @@ def ptam_over_param_range( group, param, minv, maxv, interval, exponent ):
     myfile = open(r"settings.cfg","a")
     myfile.write("\n" + group + "." + param + "=" + str(paramv * pow(10.0, \
       exponent)))
+    myfile.close()
 
     cmd = './UTPTAM'
     os.system(cmd)
@@ -51,6 +52,7 @@ for PatchSSDThreshold in range(minv, maxv + interval, interval):
   myfile = open(r"settings.cfg","a")
   myfile.write("\n" + "Tracker.PatchSSDThreshold=" + str(PatchSSDThreshold \
     * PatchSSDThreshold * 2))
+  myfile.close()
 
   cmd = './UTPTAM'
   os.system(cmd)
@@ -72,6 +74,7 @@ for CoarseMax in range(minv, maxv + interval, interval):
     myfile = open(r"settings.cfg","a")
     myfile.write("\n" + "Tracker.CoarseMin=" + str(CourseMin))
     myfile.write("\n" + "Tracker.CoarseMax=" + str(CoarseMax))
+    myfile.close()
 
     cmd = './UTPTAM'
     os.system(cmd)
