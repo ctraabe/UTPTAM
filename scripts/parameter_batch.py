@@ -72,7 +72,7 @@ for CoarseMax in range(minv, maxv + interval, interval):
     os.system(cmd)
 
     myfile = open(r"settings.cfg","a")
-    myfile.write("\n" + "Tracker.CoarseMin=" + str(CourseMin))
+    myfile.write("\n" + "Tracker.CoarseMin=" + str(CoarseMin))
     myfile.write("\n" + "Tracker.CoarseMax=" + str(CoarseMax))
     myfile.close()
 
