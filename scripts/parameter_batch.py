@@ -58,7 +58,7 @@ for PatchSSDThreshold in range(minv, maxv + interval, interval):
   os.system(cmd)
 
   cmd = 'mv coordinates.log coord_PatchSSDThreshold_' \
-    + str(PatchSSDThreshold) + '.txt'
+    + str(PatchSSDThreshold * PatchSSDThreshold * 2) + '.txt'
   os.system(cmd)
 
 
