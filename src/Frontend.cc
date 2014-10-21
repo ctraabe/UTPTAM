@@ -59,21 +59,19 @@ bool FrontendMonitor::PopUserInvoke()
   return false;
 }
 
-void FrontendMonitor::PushUserResetInvoke()
+void FrontendMonitor::PushUserResetInvoke(int nResetMode)
 {
   std::lock_guard<std::mutex> lock(mMutex);
-  mbUserResetInvoke = true;
+  // Add 1 so that the result can be used as a boolean directly.
+  mnUserResetInvoke = nResetMode + 1;
 }
 
-bool FrontendMonitor::PopUserResetInvoke()
+int FrontendMonitor::PopUserResetInvoke()
 {
   std::lock_guard<std::mutex> lock(mMutex);
-  if (mbUserResetInvoke) {
-    mbUserResetInvoke = false;
-    return true;
-  }
-
-  return false;
+  int nReturn = mnUserResetInvoke;
+  mnUserResetInvoke = 0;
+  return nReturn;
 }
 
 SE3<> FrontendMonitor::GetCurrentPose() const
@@ -129,8 +127,8 @@ Frontend::Frontend(FrameGrabber *pFrameGrabber,
     pFrameGrabber->GetFrameSize());
 
   gvar3<int> gvnInitMode("InitMode", 0, HIDDEN|SILENT) ;
-  mbInitMode = *gvnInitMode;
-  std::cout << "init mode: " << mbInitMode << std::endl;
+  mnInitMode = *gvnInitMode;
+  std::cout << "init mode: " << mnInitMode << std::endl;
 }
 
 void Frontend::operator()()
@@ -162,7 +160,7 @@ void Frontend::operator()()
 
   while (!mbDone) {
     bool bUserInvoke = monitor.PopUserInvoke();
-    bool bUserResetInvoke = monitor.PopUserResetInvoke();
+    int nUserResetInvoke = monitor.PopUserResetInvoke();
 
     bool valid;
     const FrameData& fd = mpFrameGrabber->GrabFrame(valid);
@@ -184,9 +182,11 @@ void Frontend::operator()()
 
     mDrawData.bInitialTracking = mbInitialTracking;
 
-    if (bUserResetInvoke) {
-      // Go back to initial tracking again
-      Reset(mbInitMode);
+    if (nUserResetInvoke) {
+      if (nUserResetInvoke > 3)
+        Reset(mnInitMode);
+      else
+        Reset(nUserResetInvoke - 1);
     }
 
     mpPerfMon->StartTimer("tracking_total");
@@ -252,14 +252,14 @@ void Frontend::ProcessCommand(char c) {
   std::cout << "Received command " << c << std::endl;
   switch(c) {
     case 'r':
-      Reset(2);
+      monitor.PushUserResetInvoke(2);
       break;
     default:
       break;
   }
 }
 
-void Frontend::Reset(int mode)
+void Frontend::Reset(int nResetMode)
 {
   mpInitialTracker->Reset();
   mpTracker->Reset();
@@ -267,7 +267,7 @@ void Frontend::Reset(int mode)
   mbInitialTracking = true;
   mbHasDeterminedScale = false;
   mbSetScaleNextTime = false;
-  mbInitMode = mode;
+  mnInitMode = nResetMode;
 }
 
 void Frontend::ProcessInitialization(bool bUserInvoke)
@@ -454,7 +454,7 @@ void Frontend::ProcessInitialization(bool bUserInvoke)
   // STEREO NOT USED
   else {
     // Initial tracking path
-    switch(mbInitMode) {
+    switch(mnInitMode) {
       // Fully manual mode
       case 0:
         if (bUserInvoke) {
@@ -500,12 +500,12 @@ void Frontend::ProcessInitialization(bool bUserInvoke)
 }
 
 void Frontend::ToggleMode() {
-  mbInitMode = (mbInitMode + 1) % 3;
+  mnInitMode = (mnInitMode + 1) % 3;
 }
 
 void Frontend::DetermineScaleFromMarker(const FrameData& fd, bool bUserInvoke)
 {
-  mbSetScaleNextTime = mbSetScaleNextTime || bUserInvoke || mbInitMode;
+  mbSetScaleNextTime = mbSetScaleNextTime || bUserInvoke || mnInitMode;
 
   SE3<> se3WorldFromNormWorld;
   double dScale = 1.0;

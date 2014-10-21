@@ -57,7 +57,7 @@ class FrontendMonitor {
     FrontendMonitor()
       : mbHasFrontendData(false)
       , mbUserInvoke(false)
-      , mbUserResetInvoke(false)
+      , mnUserResetInvoke(0)
       , mnTrackingStatus(0)
     {}
 
@@ -67,8 +67,8 @@ class FrontendMonitor {
     void PushUserInvoke();
     bool PopUserInvoke();
 
-    void PushUserResetInvoke();
-    bool PopUserResetInvoke();
+    void PushUserResetInvoke(int nResetMode = 3);
+    int PopUserResetInvoke();
 
     // Pose means pose of the world in the camera frame.
     SE3<> GetCurrentPose() const;
@@ -87,7 +87,7 @@ class FrontendMonitor {
     FrontendDrawData mDrawData;
 
     bool mbUserInvoke;
-    bool mbUserResetInvoke;
+    int mnUserResetInvoke;
 
     SE3<> mse3CurrentPose;
     SE3<> mse3BodyToWorld;
@@ -138,8 +138,7 @@ class Frontend {
     bool mbInitialTracking;
     bool mbHasDeterminedScale;
 
-    // Which mode for initialization
-    int mbInitMode;
+    int mnInitMode;
 
     ATANCamera mCamera;
     FrameGrabber *mpFrameGrabber;
