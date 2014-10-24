@@ -187,12 +187,18 @@ void Frontend::operator()()
         Reset(mnInitMode);
       else
         Reset(nUserResetInvoke - 1);
+      // Clear the tracking data in monitor.
+      TooN::SE3<> se3BodyToWorld;  // Default constructor gives Zeros.
+      mOnTrackedPoseUpdatedSlot(se3BodyToWorld, 0, fd.tpCaptureTime);
     }
 
     mpPerfMon->StartTimer("tracking_total");
 
     if (mbInitialTracking) {
       ProcessInitialization(bUserInvoke);
+      // Clear the tracking data in monitor.
+      TooN::SE3<> se3BodyToWorld;  // Default constructor gives Zeros.
+      mOnTrackedPoseUpdatedSlot(se3BodyToWorld, 0, fd.tpCaptureTime);
     }
 
     bool bRunTracker = !mbInitialTracking;

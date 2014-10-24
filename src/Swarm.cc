@@ -43,10 +43,8 @@ void SwarmLab::operator()()
       ProcessIncoming();
 
       std::unique_lock<std::mutex> lock(mMutex);
-      if (mbTrackingUpdated) {
-        SendTrackingPacket();
-        mbTrackingUpdated = false;
-      }
+      SendTrackingPacket();
+      mbTrackingUpdated = false;
     }
 
     rateLimiter.Limit(50.0); // Limit to 50 Hz
