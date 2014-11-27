@@ -6,6 +6,7 @@
 #include "VideoSource_Linux_Gstreamer_File.h"
 #include "VideoSource_FlyCapture.h"
 #include "VideoSource_Image.h"
+#include "VideoSource_pgm.h"
 
 #include <gvars3/gvars3.h>
 #include <gvars3/instances.h>
@@ -262,6 +263,12 @@ VideoSource* FrameGrabber::CreateVideoSource(const std::string &sName) const
     return new VideoSource_Linux_Gstreamer_File(sVideoFilename);
   }
 
+  string sPGMFilename = GV3::get<string>(sName + ".PGMFile", "");
+  if (!sPGMFilename.empty()) {
+      return new VideoSource_pgm(sPGMFilename);
+  }
+  
+  
   string sImageFilename = GV3::get<string>(sName + ".ImageFile", "");
   if (!sImageFilename.empty()) {
     return new VideoSource_Image(sName);
