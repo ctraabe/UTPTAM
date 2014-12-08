@@ -168,6 +168,8 @@ void Frontend::operator()()
     const FrameData& fd = mpFrameGrabber->GrabFrame(valid);
 
     if(!valid) {
+	std::cout << "Resetting mapmaker\n";
+	mpMapMaker->Reset(true);
       system->Quit();
     }
 
@@ -261,6 +263,8 @@ void Frontend::operator()()
 
     mpPerfMon->StopTimer("tracking_total");
   }
+
+  std::cout << "frontend done\n";
 }
 
 void Frontend::ProcessCommand(char c) {

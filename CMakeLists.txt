@@ -7,7 +7,7 @@ set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
     
 # Target platfrom
-option(FULL_OPTIMIZATION "Enable all optimization flags" OFF)
+option(FULL_OPTIMIZATION "Enable all optimization flags" ON)
     
 # The CDT Error Parser cannot handle error messages that span more than one line, which is the default gcc behavior. 
 # This forces gcc to generate single line error messages with no line wrapping.  

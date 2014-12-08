@@ -51,6 +51,7 @@ void SwarmLab::operator()()
 
     rateLimiter.Limit(50.0); // Limit to 50 Hz
   }
+  std::cout << "Swarm done\n";
 }
 
 void SwarmLab::SetCallback(const std::function<void(char c)> &_callback)

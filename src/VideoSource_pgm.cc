@@ -41,13 +41,12 @@ bool VideoSource_pgm::GetAndFillFrameBWandRGB(Image<byte> &imBW, Image<Rgb<byte>
     ++cnt;
     
     try {
-	std::cout << "loading " << tname << std::endl;
+
 	img_load(mimBW, tname);
     } catch (Exceptions::All e) {
 	return false;
     }
 
-    std::cout << "conv image: " << mimBW.size() << std::endl;
     convert_image(mimBW,mimRGB);
     
     imBW.copy_from(mimBW);

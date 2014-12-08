@@ -247,6 +247,8 @@ void FrameGrabber::operator ()()
   while (!mbDone) {
     FetchNextFrame();
   }
+
+  std::cout << "stopped grabbing\n";
 }
 
 VideoSource* FrameGrabber::CreateVideoSource(const std::string &sName) const

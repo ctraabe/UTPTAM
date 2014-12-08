@@ -366,6 +366,14 @@ void Tracker::TrackCoarse(vector<TrackerData*> avPVS[])
 
   // Set of heuristics to check if we should do a coarse tracking stage.
   bool bTryCoarse = true;
+
+  static double maxminvel = 0.0;
+  if( mdMSDScaledVelocityMagnitude > maxminvel ) {
+      std::cout << "max minvel: " << mdMSDScaledVelocityMagnitude << std::endl;
+      maxminvel = mdMSDScaledVelocityMagnitude;
+  }
+
+  
   if(*gvnCoarseDisabled ||
      mdMSDScaledVelocityMagnitude < *gvdCoarseMinVel  ||
      nCoarseMax == 0)
