@@ -49,6 +49,7 @@ class FeatureGrid {
 
     FeatureDetector GetFeatureDetector() { return mFeatureDetector; }
     void SetFeatureDetector(FeatureDetector featureDetector) { mFeatureDetector = featureDetector; }
+    void SetFASTBarrier(int nBarrier);
 
   private:
     struct ScoredPoint {

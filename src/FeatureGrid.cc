@@ -159,6 +159,13 @@ void FeatureGrid::SetTargetFeatureCount(size_t nMinFeaturesPerCell, size_t nMaxF
   mnMaxFeaturesPerCell = nMaxFeaturesPerCell;
 }
 
+void FeatureGrid::SetFASTBarrier(int nBarrier)
+{
+  for (size_t i = 0; i < mvCells.size(); ++i) {
+    mvCells[i].nBarrier = nBarrier;
+  }
+}
+
 void FeatureGrid::Clear()
 {
   for (size_t i = 0; i < mvCells.size(); ++i) {

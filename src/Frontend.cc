@@ -171,9 +171,24 @@ void Frontend::operator()()
       system->Quit();
     }
 
+    static gvar3<int> gvnInitialBarrier("FAST.InitialBarrier", 10, SILENT);
+    static gvar3<int> gvnBarrier0("FAST.Barrier0", 10, SILENT);
+    static gvar3<int> gvnBarrier1("FAST.Barrier1", 15, SILENT);
+    static gvar3<int> gvnBarrier2("FAST.Barrier2", 15, SILENT);
+    static gvar3<int> gvnBarrier3("FAST.Barrier3", 10, SILENT);
+
     // Initialize keyframe, find features etc
-    mKeyFrame.InitFromImage(fd.imFrameBW[0],
-      static_cast<FeatureDetector>(*mgvnFeatureDetector));
+    if (mbInitialTracking) {
+      int nBarrier[4] = { *gvnInitialBarrier, *gvnInitialBarrier,
+        *gvnInitialBarrier, *gvnInitialBarrier };
+      mKeyFrame.InitFromImage(fd.imFrameBW[0],
+        static_cast<FeatureDetector>(*mgvnFeatureDetector), nBarrier);
+    } else {
+      int nBarrier[4] = { *gvnBarrier0, *gvnBarrier1,
+        *gvnBarrier2, *gvnBarrier3 };
+      mKeyFrame.InitFromImage(fd.imFrameBW[0],
+        static_cast<FeatureDetector>(*mgvnFeatureDetector), nBarrier);
+    }
 
     // Set some of the draw data
     mDrawData.imFrame.copy_from(fd.imFrameRGB[0]);
@@ -298,8 +313,9 @@ void Frontend::ProcessInitialization(bool bUserInvoke)
     featureGrid.GetBestFeatures(150, vBestFeatures);
 
     KeyFrame rightKF(mCamera);
+    int nBarrier[4] = { 10, 15, 15, 10 };
     rightKF.InitFromImage(fd.imFrameBW[1],
-                          static_cast<FeatureDetector>(*mgvnFeatureDetector));
+      static_cast<FeatureDetector>(*mgvnFeatureDetector), nBarrier);
 
     ATANCamera c = mCamera;
     Vector<4> v4Plane = mStereoPlaneFinder.GetPlane();

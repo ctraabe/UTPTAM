@@ -70,10 +70,10 @@ Level& Level::operator=(const Level &rhs)
   return *this;
 }
 
-void Level::Init(size_t nWidth, size_t nHeight, size_t nGridRows, size_t nGridCols, size_t nBarrier)
+void Level::Init(size_t nWidth, size_t nHeight, size_t nGridRows, size_t nGridCols)
 {
   assert(mpFeatureGrid == NULL);
-  mpFeatureGrid = new FeatureGrid(nWidth, nHeight, nGridRows, nGridCols, nBarrier);
+  mpFeatureGrid = new FeatureGrid(nWidth, nHeight, nGridRows, nGridCols);
 }
 
 void Level::SetTargetFeatureCount(size_t nMinFeatures, size_t nMaxFeatures)
@@ -148,24 +148,13 @@ KeyFrame::KeyFrame(const ATANCamera &cam)
 
   int width = std::round(cam.GetImageSize()[0]);
   int height = std::round(cam.GetImageSize()[1]);
-  int nBarrier[4];
-
-  static gvar3<int> gvnBarrier0("FAST.Barrier0", 10, SILENT);
-  static gvar3<int> gvnBarrier1("FAST.Barrier1", 15, SILENT);
-  static gvar3<int> gvnBarrier2("FAST.Barrier2", 15, SILENT);
-  static gvar3<int> gvnBarrier3("FAST.Barrier3", 10, SILENT);
-
-  nBarrier[0] = *gvnBarrier0;
-  nBarrier[1] = *gvnBarrier1;
-  nBarrier[2] = *gvnBarrier2;
-  nBarrier[3] = *gvnBarrier3;
 
   for (int i = 0; i < LEVELS; ++i) {
     // Choose number of rows and cols so that the cell size is close to 50x50
     int cols = std::round((double)width / DESIRED_CELL_SIZE);
     int rows = std::round((double)height / DESIRED_CELL_SIZE);
     rows = cols = 1;
-    aLevels[i].Init(width, height, rows, cols, nBarrier[i]);
+    aLevels[i].Init(width, height, rows, cols);
     width /= 2; height /= 2;
   }
 
@@ -324,7 +313,8 @@ void KeyFrame::RefreshSceneDepth()
  * mapmaker but not the tracker go in MakeKeyFrame_Rest();
  * @param im image to make keyframe from
  */
-void KeyFrame::InitFromImage(const BasicImage<CVD::byte> &im, FeatureDetector featureDetector)
+void KeyFrame::InitFromImage(const BasicImage<CVD::byte> &im,
+  FeatureDetector featureDetector, int nBarrier[4])
 {
   Reset();
 
@@ -340,6 +330,9 @@ void KeyFrame::InitFromImage(const BasicImage<CVD::byte> &im, FeatureDetector fe
   //gFeatureTimer.Start();
   for (int i = 0; i < LEVELS; ++i) {
     aLevels[i].mpFeatureGrid->SetFeatureDetector(featureDetector);
+    if (nBarrier) {
+      aLevels[i].mpFeatureGrid->SetFASTBarrier(nBarrier[i]);
+    }
     aLevels[i].FindFeatures();
   }
   //gFeatureTimer.Stop();

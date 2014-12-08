@@ -61,7 +61,7 @@ class Level {
     Level(const Level& rhs);
     ~Level();
 
-    void Init(size_t nWidth, size_t nHeight, size_t nGridRows, size_t nGridCols, size_t nBarrier);
+    void Init(size_t nWidth, size_t nHeight, size_t nGridRows, size_t nGridCols);
     void SetTargetFeatureCount(size_t nMinFeatures, size_t nMaxFeatures);
 
     Level& operator=(const Level &rhs);
@@ -101,7 +101,7 @@ class KeyFrame {
 
     KeyFrame& operator=(const KeyFrame &rhs);
 
-    void InitFromImage(const CVD::BasicImage<CVD::byte> &im, FeatureDetector featureDetector);
+    void InitFromImage(const CVD::BasicImage<CVD::byte> &im, FeatureDetector featureDetector, int nBarrier[4] = NULL );
     void Reset();
 
     void ThinCandidates(int nLevel, std::vector<CVD::ImageRef>& vCandidates);
