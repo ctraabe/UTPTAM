@@ -321,6 +321,8 @@ void System::Run()
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
 
+  std::cout << "System done\n";
+  
   mModules.pMapMaker->StopThread();
   mModules.pFrontend->StopThread();
   mModules.pMikroKopter->StopThread();

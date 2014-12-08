@@ -123,6 +123,10 @@ void MapMaker::operator()()
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
     // Perform all queued actions
+    if(mbDone) {
+	mbAbortRequested = true;
+	std::cout << "Running queued actions\n";
+    }
     mDispatcher.RunQueuedActions();
 
     // Nothing to do if there is no map yet! or is locked
@@ -134,6 +138,10 @@ void MapMaker::operator()()
     // Hierarchy. For example, if there's a new key-frame to be added (QueueSize() is >0)
     // then that takes high priority.
 
+    if(mbDone) {
+	mbAbortRequested = true;
+	std::cout << "Bundle adjust\n";
+    }
     // Should we run local bundle adjustment?
     if(!mpMap->RecentBundleAdjustConverged() && mpMap->QueueSize() == 0) {
       mbAbortRequested = false;
@@ -145,6 +153,11 @@ void MapMaker::operator()()
     }
 
     if (mbAbortRequested || !mDispatcher.Empty()) continue;
+
+    if(mbDone) {
+	mbAbortRequested = true;
+	std::cout << "refine\n";
+    }
 
     // Are there any newly-made map points which need more measurements from older key-frames?
     if(mpMap->RecentBundleAdjustConverged() && mpMap->QueueSize() == 0) {
@@ -162,6 +175,10 @@ void MapMaker::operator()()
     // otherwise the camera loses tracking with fast camera movements -- dhenell
     //if (mpMap->QueueSize() == 0) {
       mbAbortRequested = false;
+      if(mbDone) {
+	  mbAbortRequested = true;
+	  std::cout << "Full bundle adjust\n";
+      }
       DEBUG_MAP_MAKER(cout << "START: Full bundle adjustment" << endl);
       if (!mpMap->FullBundleAdjust(&mbAbortRequested)) {
         mpMap->Reset();
@@ -170,6 +187,11 @@ void MapMaker::operator()()
     }
 
     if (mbAbortRequested || !mDispatcher.Empty()) continue;
+
+    if(mbDone) {
+	mbAbortRequested = true;
+	std::cout << "refind\n";
+    }
 
     // Very low priorty: re-find measurements marked as outliers
     if(mpMap->RecentBundleAdjustConverged() && mpMap->FullBundleAdjustConverged() &&
@@ -182,10 +204,15 @@ void MapMaker::operator()()
 
     if (mbAbortRequested || !mDispatcher.Empty()) continue;
 
+    if(mbDone) {
+	std::cout << "Handling bad points\n";
+    }
+
     DEBUG_MAP_MAKER(cout << "START: Handling bad points" << endl);
     mpMap->HandleBadPoints();
     DEBUG_MAP_MAKER(cout << "  END: Handling bad points" << endl);
   }
+  std::cout << "MapMaker done\n";
 }
 
 /**
