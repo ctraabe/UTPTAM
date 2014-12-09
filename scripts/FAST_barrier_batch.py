@@ -5,8 +5,8 @@ import os
 os.chdir('..')
 
 
-minv = 5
-maxv = 25
+minv = 15
+maxv = 35
 interval = 5
 for Barrier0 in range(minv, maxv + interval, interval):
   for Barrier1 in range(minv, maxv + interval, interval):
