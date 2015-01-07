@@ -15,8 +15,8 @@ def ptam_over_param_range( group, param, minv, maxv, interval, exponent, batch )
     cmd = './UTPTAM'
     os.system(cmd)
 
-    cmd = 'mv coordinates.log batch' + str(batch) + '/coord_' + param + '_' \
-      + str(paramv) + 'e' + str(exponent) + '.txt'
+    cmd = 'mv coordinates.log batch' + str(batch) + '/' + group + '_' + param \
+      + '_' + str(paramv) + 'e' + str(exponent) + '.txt'
     os.system(cmd)
   return
 
@@ -63,7 +63,7 @@ for batch in range(1, 10, 1):
     cmd = './UTPTAM'
     os.system(cmd)
 
-    cmd = 'mv coordinates.log batch' + str(batch) + '/coord_Barrier_' \
+    cmd = 'mv coordinates.log batch' + str(batch) + '/FAST_Barrier_' \
       + str(Barrier) + 'e' + str(exponent) + '.txt'
     os.system(cmd)
 
@@ -85,6 +85,6 @@ for batch in range(1, 10, 1):
       cmd = './UTPTAM'
       os.system(cmd)
 
-      cmd = 'mv coordinates.log batch' + str(batch) + '/coord_CoarseMin_' \
+      cmd = 'mv coordinates.log batch' + str(batch) + '/Tracker_CoarseMin_' \
         + str(CoarseMin) + '_CourseMax_' + str(CoarseMax) + '.txt'
       os.system(cmd)

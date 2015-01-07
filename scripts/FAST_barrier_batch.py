@@ -25,7 +25,7 @@ for Barrier0 in range(minv, maxv + interval, interval):
         cmd = './UTPTAM'
         os.system(cmd)
 
-        cmd = 'mv coordinates.log coord' \
+        cmd = 'mv coordinates.log FAST' \
           + '_Barrier0_' + str(Barrier0) \
           + '_Barrier1_' + str(Barrier1) \
           + '_Barrier2_' + str(Barrier2) \
